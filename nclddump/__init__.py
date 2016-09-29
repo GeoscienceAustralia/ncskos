@@ -1,3 +1,9 @@
+'''
+Created on 30 Sep 2016
+
+@author: Alex Ip
+'''
+
 import netCDF4
 import sys
 import re
@@ -90,9 +96,3 @@ class NCLDDump(object):
          
         input_spool.close()
         return output_spool
-    
-def main():
-    NCLDDump(sys.argv[1:])
-    
-if __name__ == '__main__':
-    main()
