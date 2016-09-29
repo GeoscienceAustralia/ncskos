@@ -6,11 +6,19 @@ import logging
 import subprocess
 import tempfile
 
+# Set handler for root logger to standard output
+console_handler = logging.StreamHandler(sys.stdout)
+#console_handler.setLevel(logging.INFO)
+console_handler.setLevel(logging.DEBUG)
+console_formatter = logging.Formatter('%(message)s')
+console_handler.setFormatter(console_formatter)
+logging.root.addHandler(console_handler)
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG) # Initial logging level for this module
 
 class NCLDDump(object):
-    ATTRIBUTE_NAME = 'skos _concept_uri'
+    ATTRIBUTE_NAME = 'skos_concept_uri'
     MAX_MEM = 1000000000 # 1GB?
     
     def __init__(self, ncdump_arguments=None):
@@ -43,6 +51,7 @@ class NCLDDump(object):
         attribute_regex = re.compile(attribute_regex_string)
         
         ncdump_command = ['ncdump'] + ncdump_arguments
+        logger.debug('ncdump_command = "%s"', ' '.join(ncdump_command))
         
         input_spool = tempfile.SpooledTemporaryFile(max_size=NCLDDump.MAX_MEM, 
                                                    mode='w+b', 
