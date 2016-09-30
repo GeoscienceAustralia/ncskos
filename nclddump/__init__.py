@@ -113,6 +113,7 @@ class NCLDDump(object):
         
         assert '-x' not in ncdump_arguments, 'XML output not yet supported (coming soon)'
         
+        #TODO: Investigate issues around global attributes. This regex will only work with simple variable attributes
         # Example: '    time:concept_uri = "http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/time" ;'
         attribute_regex_string = '^\s*(\w+):' + NCLDDump.ATTRIBUTE_NAME + '\s*=\s*"(http(s*)://.*)"\s*;\s*$' 
         logger.debug('attribute_regex_string = %s', attribute_regex_string)
@@ -130,7 +131,7 @@ class NCLDDump(object):
                                                    )
         
         #TODO: Work out whether we actually need to do this.
-        # This might be overkill if we are only writing to stdout - could just print
+        # This might be overkill if we are only writing to stdout - we could just print
         output_spool = tempfile.SpooledTemporaryFile(max_size=NCLDDump.MAX_MEM, 
                                                    mode='w+', 
                                                    bufsize=-1,
@@ -163,10 +164,10 @@ class NCLDDump(object):
                         logger.debug('modified_line = %s', modified_line)
                         output_spool.write(modified_line)
                         
-                    continue # Process next line
+                    continue # Process next input line
                 except Exception, e:
                     logger.warning('URI resolution failed for %s: %s', uri, e.message)
-                    pass # Fall back to original line  
+                    pass # Fall back to original input line  
                             
             output_spool.write(input_line) # Output original line
          
