@@ -1,10 +1,12 @@
 '''
+Class definition for NCLDDump to implement prototype nclddump command
+Wraps ncdump to perform SKOS vocabulary lookups and substitute these into the CDL output
+
 Created on 30 Sep 2016
 
 @author: Alex Ip
 '''
 
-import netCDF4
 import sys
 import re
 import os
@@ -29,8 +31,8 @@ class NCLDDump(object):
     Class definition for NCLDDump to implement prototype nclddump command
     Wraps ncdump to perform SKOS vocabulary lookups and substitute these into the CDL output
     '''
-    ATTRIBUTE_NAME = 'skos_concept_uri'
-    MAX_MEM = 1000000000 # 1GB?
+    ATTRIBUTE_NAME = 'skos_concept_uri' # Attribute name for SKOS URIs
+    MAX_MEM = 1000000000 # Limit before switching from stringIO to file (1GB?)
     
     def __init__(self, arguments=None):
         '''
@@ -62,6 +64,7 @@ class NCLDDump(object):
         def get_skos_args(arguments):
             '''
             Helper function to split SKOS options from ncdump arguments
+            @param arguments: ncdump arguments with optional "--skos <skos_option>=<value> <skos_option>=<value>..." arguments
         
             Returns:
                 ncdump_arguments: List of ncdump arguments
@@ -88,7 +91,7 @@ class NCLDDump(object):
                             value = float(value)
                         except ValueError:
                             try:
-                                value = strtobool(value)
+                                value = bool(strtobool(value))
                             except ValueError:
                                 pass # No change to string value  
                         
@@ -124,7 +127,8 @@ class NCLDDump(object):
                                                    #dir=None
                                                    )
         
-        #TODO: Work out whether we actually need to do this - could be overkill if we are only writing to stdout
+        #TODO: Work out whether we actually need to do this.
+        # This might be overkill if we are only writing to stdout - could just print
         output_spool = tempfile.SpooledTemporaryFile(max_size=NCLDDump.MAX_MEM, 
                                                    mode='w+', 
                                                    bufsize=-1,
@@ -148,6 +152,7 @@ class NCLDDump(object):
                 attribute_value_dict = self.resolve_skos_uri(uri, skos_option_dict)
                 logger.debug('attribute_value_dict = %s', attribute_value_dict)
                 
+                # Write each key:value pair as a separate line
                 for key, value in attribute_value_dict.items():
                     output_spool.write(line.replace(variable_name + ':' + NCLDDump.ATTRIBUTE_NAME,
                                                     variable_name + ':' + key
