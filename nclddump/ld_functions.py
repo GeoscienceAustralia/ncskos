@@ -224,10 +224,10 @@ class ConceptFetcher(object):
             results['skos_altLabels'] = str(', '.join(self.altLabels))
 
         if self.narrower:
-            results['skos_altLabels'] = str(', '.join(self.narrower))
+            results['skos_narrower'] = str(', '.join(self.narrower))
 
         if self.broader:
-            results['skos_altLabels'] = str(', '.join(self.broader))
+            results['skos_broader'] = str(', '.join(self.broader))
 
         return results
 
