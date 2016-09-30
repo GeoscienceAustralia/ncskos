@@ -7,13 +7,13 @@
 @prefix dc: <http://purl.org/dc/elements/1.1/> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 
-<http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos> a skos:ConceptScheme ;
+<http://pid.geoscience.gov.au/def/netCDF-LD> a skos:ConceptScheme ;
 	dc:creator "Nicholas Car";
 	dc:date "2016-09-29";
 	dct:title "netCDF-LD example - Surface temperature"@en;
 	skos:changeNote "This vocabulary has been made by hand, in a text editor"@en;
 	skos:editorialNote "This vocabulary is a SKOS formulation of 6 terms from the 'CF Conventions and Metadata' (http://cfconventions.org/) vocabulary's v36 of the 'CF Standard Name Table' (http://cfconventions.org/Data/cf-standard-names/36/build/cf-standard-name-table.html). It has been built to demonstrate vocabulary reasoning, not to be accurate for scientific purposes."@en;
-	skos:hasTopConcept <http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/surface_temperature> , <http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/time> , <http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/latitude>, <http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/longitude> ;
+	skos:hasTopConcept <http://pid.geoscience.gov.au/def/netCDF-LD/surface_temperature> , <http://pid.geoscience.gov.au/def/netCDF-LD/time> , <http://pid.geoscience.gov.au/def/netCDF-LD/latitude>, <http://pid.geoscience.gov.au/def/netCDF-LD/longitude> ;
 	skos:prefLabel "netCDF-LD example - Surface temperature"@en;
 	dct:contributor "Nicholas Car";
 	dct:creator "Nicholas Car";
@@ -24,60 +24,72 @@
 	dct:issued "2016-09-29"^^xsd:date;
 	owl:versionInfo "v1.0" .
 
-<http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/surface_temperature> a skos:Concept;
+<http://pid.geoscience.gov.au/def/netCDF-LD/all_concepts> a skos:Collection ;
+	skos:member	<http://pid.geoscience.gov.au/def/netCDF-LD/surface_temperature> ,
+		<http://pid.geoscience.gov.au/def/netCDF-LD/sea_surface_temperature> ,
+		<http://pid.geoscience.gov.au/def/netCDF-LD/sea_surface_skin_temperature> ,
+		<http://pid.geoscience.gov.au/def/netCDF-LD/sea_surface_subskin_temperature> ,
+		<http://pid.geoscience.gov.au/def/netCDF-LD/square_of_sea_surface_temperature> ,
+		<http://pid.geoscience.gov.au/def/netCDF-LD/time> ,
+		<http://pid.geoscience.gov.au/def/netCDF-LD/latitude> ,
+		<http://pid.geoscience.gov.au/def/netCDF-LD/longitude> ;
+.
+
+
+<http://pid.geoscience.gov.au/def/netCDF-LD/surface_temperature> a skos:Concept;
 	skos:prefLabel "surface temperature"@en, "temperatura powierzchni"@pl;
 	skos:altLabel "surface_temperature_where_land"@en, "surface temperature where open sea"@en, "surface temperature where snow"@en;
 	skos:definition "The surface called \"surface\" means the lower boundary of the atmosphere. The surface temperature is the temperature at the interface, not the bulk temperature of the medium above or below. Unless indicated in the cell_methods attribute, a quantity is assumed to apply to the whole area of each horizontal grid box. Previously, the qualifier where_type was used to specify that the quantity applies only to the part of the grid box of the named type. Names containing the where_type qualifier are deprecated and newly created data should use the cell_methods attribute to indicate the horizontal area to which the quantity applies."@en;
-	skos:inScheme <http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos>;
-	skos:topConceptOf <http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos>;
-	skos:narrower <http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/sea_surface_temperature>;
+	skos:inScheme <http://pid.geoscience.gov.au/def/netCDF-LD>;
+	skos:topConceptOf <http://pid.geoscience.gov.au/def/netCDF-LD>;
+	skos:narrower <http://pid.geoscience.gov.au/def/netCDF-LD/sea_surface_temperature>;
 .
 
-<http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/sea_surface_temperature> a skos:Concept;
+<http://pid.geoscience.gov.au/def/netCDF-LD/sea_surface_temperature> a skos:Concept;
 	skos:prefLabel "sea surface temperature"@en, "temperatura powierzchni morza"@pl;
 	skos:altLabel "SST"^^xsd:string ;
 	skos:definition "Sea surface temperature is usually abbreviated as \"SST\". It is the temperature of sea water near the surface (including the part under sea-ice, if any). More specific terms, namely sea_surface_skin_temperature, sea_surface_subskin_temperature, and surface_termperature are available for the skin, subskin, and interface temperature. respectively. For the temperature of sea water at a particular depth or layer, a data variable of sea_water_temperature with a vertical coordinate axis should be used."@en;
-	skos:inScheme <http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos>;
-	skos:narrower <http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/sea_surface_skin_temperature>, 
-		<http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/sea_surface_subskin_temperature>,
-		<http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/square_of_sea_surface_temperature>;
+	skos:inScheme <http://pid.geoscience.gov.au/def/netCDF-LD>;
+	skos:narrower <http://pid.geoscience.gov.au/def/netCDF-LD/sea_surface_skin_temperature>, 
+		<http://pid.geoscience.gov.au/def/netCDF-LD/sea_surface_subskin_temperature>,
+		<http://pid.geoscience.gov.au/def/netCDF-LD/square_of_sea_surface_temperature>;
 .
 
-<http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/sea_surface_skin_temperature> a skos:Concept;
+<http://pid.geoscience.gov.au/def/netCDF-LD/sea_surface_skin_temperature> a skos:Concept;
 	skos:prefLabel "sea surface skin temperature"@en, "temperatura powierzchni morskiej skóry"@pl;
 	skos:definition "The surface called \"surface\" means the lower boundary of the atmosphere. The sea surface skin temperature is the temperature measured by an infrared radiometer typically operating at wavelengths in the range 3.7 - 12 micrometers. It represents the temperature within the conductive diffusion-dominated sub-layer at a depth of approximately 10 - 20 micrometers below the air-sea interface. Measurements of this quantity are subject to a large potential diurnal cycle including cool skin layer effects (especially at night under clear skies and low wind speed conditions) and warm layer effects in the daytime."@en;
-	skos:inScheme <http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos>;
+	skos:inScheme <http://pid.geoscience.gov.au/def/netCDF-LD>;
 .
 
-<http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/sea_surface_subskin_temperature> a skos:Concept;
+<http://pid.geoscience.gov.au/def/netCDF-LD/sea_surface_subskin_temperature> a skos:Concept;
 	skos:prefLabel "sea surface subskin temperature"@en, "temperatura powierzchni morza podskórne"@pl;
 	skos:definition "The surface called \"surface\" means the lower boundary of the atmosphere. The sea surface subskin temperature is the temperature at the base of the conductive laminar sub-layer of the ocean surface, that is, at a depth of approximately 1 - 1.5 millimeters below the air-sea interface. For practical purposes, this quantity can be well approximated to the measurement of surface temperature by a microwave radiometer operating in the 6 - 11 gigahertz frequency range, but the relationship is neither direct nor invariant to changing physical conditions or to the specific geometry of the microwave measurements. Measurements of this quantity are subject to a large potential diurnal cycle due to thermal stratification of the upper ocean layer in low wind speed high solar irradiance conditions."@en;
-	skos:inScheme <http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos>;
+	skos:inScheme <http://pid.geoscience.gov.au/def/netCDF-LD>;
 .
 
-<http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/square_of_sea_surface_temperature> a skos:Concept;
+<http://pid.geoscience.gov.au/def/netCDF-LD/square_of_sea_surface_temperature> a skos:Concept;
 	skos:prefLabel "square of sea surface temperature"@en, "temperatura powierzchni morza do kwadratu"@pl;
 	skos:definition "Sea surface temperature is usually abbreviated as \"SST\". It is the temperature of sea water near the surface (including the part under sea-ice, if any), and not the skin temperature, whose standard name is surface_temperature. For the temperature of sea water at a particular depth or layer, a data variable of sea_water_temperature with a vertical coordinate axis should be used. \"square_of_X\" means X*X."@en;
-	skos:inScheme <http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos>;
+	skos:inScheme <http://pid.geoscience.gov.au/def/netCDF-LD>;
 .
 
-<http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/time> a skos:Concept;
+<http://pid.geoscience.gov.au/def/netCDF-LD/time> a skos:Concept;
 	skos:prefLabel "time"@en, "czas"@pl;
 	skos:definition "Time is the indefinite continued progress of existence and events that occur in apparently irreversible succession from the past through the present to the future."@en;
-	skos:topConceptOf <http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos>;
-	skos:inScheme <http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos>;
+	skos:topConceptOf <http://pid.geoscience.gov.au/def/netCDF-LD>;
+	skos:inScheme <http://pid.geoscience.gov.au/def/netCDF-LD>;
 .
 
-<http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/latitude> a skos:Concept;
+<http://pid.geoscience.gov.au/def/netCDF-LD/latitude> a skos:Concept;
 	skos:prefLabel "latitude"@en, "szerokość"@pl;
 	skos:definition "The angular distance of a place north or south of the earth's equator, or of the equator of a celestial object, usually expressed in degrees and minutes.."@en;
-	skos:topConceptOf <http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos>;
-	skos:inScheme <http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos>;
+	skos:topConceptOf <http://pid.geoscience.gov.au/def/netCDF-LD>;
+	skos:inScheme <http://pid.geoscience.gov.au/def/netCDF-LD>;
 .
 
-<http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/longitude> a skos:Concept;
+<http://pid.geoscience.gov.au/def/netCDF-LD/longitude> a skos:Concept;
 	skos:prefLabel "longitude"@en, "długość geograficzna"@pl;
 	skos:definition "The angular distance of a place east or west of the Greenwich meridian, or west of the standard meridian of a celestial object, usually expressed in degrees and minutes."@en;
-	skos:topConceptOf <http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos>;
-	skos:inScheme <http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos>;
+	skos:topConceptOf <http://pid.geoscience.gov.au/def/netCDF-LD>;
+	skos:inScheme <http://pid.geoscience.gov.au/def/netCDF-LD>;
 .
