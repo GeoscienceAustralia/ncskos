@@ -37,12 +37,13 @@ class NCLDDump(object):
             
     def resolve_skos_uri(self, uri, skos_options_dict=None):
         '''
-        Function to resolve Linked Data URI and return string result
+        Function to resolve Linked Data URI and return results as <key>:<value> dict
+        @param skos_options_dict: <key>:<value> dict containing SKOS options
         '''
         skos_options_dict = skos_options_dict or {}
         
         #TODO: Replace stub with Nick's link resolving code
-        return 'Freddo Frog'
+        return {'skos_stuff': 'Freddo Frog'}
 
     def process_ncdump(self, arguments):
         '''
@@ -114,6 +115,7 @@ class NCLDDump(object):
                                                    #dir=None
                                                    )
         
+        #TODO: Work out whether we actually need to do this - could be overkill
         output_spool = tempfile.SpooledTemporaryFile(max_size=NCLDDump.MAX_MEM, 
                                                    mode='w+', 
                                                    bufsize=-1,
@@ -134,12 +136,16 @@ class NCLDDump(object):
                 uri = attribute_regex.group(2)
                 logger.debug('variable_name = %s, uri = %s', variable_name, uri)
                 
-                attribute_value = self.resolve_skos_uri(uri, skos_option_dict)
-                logger.debug('attribute_value = %s', attribute_value)
+                attribute_value_dict = self.resolve_skos_uri(uri, skos_option_dict)
+                logger.debug('attribute_value_dict = %s', attribute_value_dict)
                 
-                line.replace(uri, attribute_value)
-                
-            output_spool.write(line)  
+                for key, value in attribute_value_dict.items():
+                    output_spool.write(line.replace(variable_name + ':' + NCLDDump.ATTRIBUTE_NAME,
+                                                    variable_name + ':' + key
+                                                    ).replace(uri, value)
+                                       )                
+            else:
+                output_spool.write(line)  
          
         input_spool.close()
         return output_spool
