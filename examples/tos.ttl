@@ -13,7 +13,7 @@
 	dct:title "netCDF-LD example - Surface temperature"@en;
 	skos:changeNote "This vocabulary has been made by hand, in a text editor"@en;
 	skos:editorialNote "This vocabulary is a SKOS formulation of 6 terms from the 'CF Conventions and Metadata' (http://cfconventions.org/) vocabulary's v36 of the 'CF Standard Name Table' (http://cfconventions.org/Data/cf-standard-names/36/build/cf-standard-name-table.html). It has been built to demonstrate vocabulary reasoning, not to be accurate for scientific purposes."@en;
-	skos:hasTopConcept <http://pid.geoscience.gov.au/def/voc/dynamicdata/dynamic> , <http://pid.geoscience.gov.au/def/voc/dynamicdata/static>;
+	skos:hasTopConcept <http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/surface_temperature> , <http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/time> , <http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/latitude>, <http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/longitude> ;
 	skos:prefLabel "netCDF-LD example - Surface temperature"@en;
 	dct:contributor "Nicholas Car";
 	dct:creator "Nicholas Car";
@@ -75,7 +75,7 @@
 	skos:inScheme <http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos>;
 .
 
-<http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/time> a skos:Concept;
+<http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/longitude> a skos:Concept;
 	skos:prefLabel "longitude"@en, "długość geograficzna"@pl;
 	skos:definition "The angular distance of a place east or west of the Greenwich meridian, or west of the standard meridian of a celestial object, usually expressed in degrees and minutes."@en;
 	skos:topConceptOf <http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos>;
