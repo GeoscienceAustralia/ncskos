@@ -57,7 +57,7 @@
 
 <http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/square_of_sea_surface_temperature> a skos:Concept;
 	skos:prefLabel "square of sea surface temperature"@en, "temperatura powierzchni morza do kwadratu"@pl;
-	skos:definition "Sea surface temperature is usually abbreviated as "SST". It is the temperature of sea water near the surface (including the part under sea-ice, if any), and not the skin temperature, whose standard name is surface_temperature. For the temperature of sea water at a particular depth or layer, a data variable of sea_water_temperature with a vertical coordinate axis should be used. \"square_of_X\" means X*X."@en;
+	skos:definition "Sea surface temperature is usually abbreviated as \"SST\". It is the temperature of sea water near the surface (including the part under sea-ice, if any), and not the skin temperature, whose standard name is surface_temperature. For the temperature of sea water at a particular depth or layer, a data variable of sea_water_temperature with a vertical coordinate axis should be used. \"square_of_X\" means X*X."@en;
 	skos:inScheme <http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos>;
 .
 
