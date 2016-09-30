@@ -137,6 +137,7 @@ class NCLDDump(object):
         input_spool.seek(0)
         
         for line in input_spool.readlines():
+            line = line.replace('\n', '')
             logger.debug('line = %s', line)
             
             attribute_match = re.match(attribute_regex, line)
