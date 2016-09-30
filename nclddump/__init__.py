@@ -71,6 +71,7 @@ class NCLDDump(object):
                         assert key_value_match is not None, 'SKOS options must be expressed as <key>=<value>'
                         key = key_value_match.group(1).strip()
                         value = key_value_match.group(2).strip()
+                        logger.debug('key = %s, value = %s', key, value)
                         
                         # Perform basic typecasting from string to float or bool
                         try:
@@ -78,7 +79,7 @@ class NCLDDump(object):
                         except ValueError:
                             if re.match('True', value, re.I):
                                 value = True
-                            if re.match('False', value, re.I):
+                            elif re.match('False', value, re.I):
                                 value = False
                         
                         skos_option_dict[key] = value
