@@ -69,8 +69,8 @@ class NCLDDump(object):
                     else:
                         key_value_match = re.search(key_value_regex, arg)
                         assert key_value_match is not None, 'SKOS options must be expressed as <key>=<value>'
-                        key = key_value_match.group(1).trim()
-                        value = key_value_match.group(2).trim()
+                        key = key_value_match.group(1).strip()
+                        value = key_value_match.group(2).strip()
                         
                         # Perform basic typecasting from string to float or bool
                         try:
