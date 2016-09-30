@@ -152,10 +152,10 @@ class NCLDDump(object):
                 for key, value in attribute_value_dict.items():
                     output_spool.write(line.replace(variable_name + ':' + NCLDDump.ATTRIBUTE_NAME,
                                                     variable_name + ':' + key
-                                                    ).replace(uri, value)
+                                                    ).replace(uri, value) + '\n'
                                        )                
             else:
-                output_spool.write(line)  
+                output_spool.write(line + '\n')  
          
         input_spool.close()
         output_spool.seek(0)
