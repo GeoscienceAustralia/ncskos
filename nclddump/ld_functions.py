@@ -9,11 +9,34 @@ from StringIO import StringIO
 
 
 class ConceptFetcher(object):
-    def __init__(self, skosprefs=None):
+    def __init__(self, skos_params, uri):
         """ConceptFetcher constructor
-
         """
-        pass
+        if not self.valid_command_line_args(skos_params):
+            exit()
+
+        if not self.valid_skos_concept_uri(uri):
+            exit()
+
+        r = self.dereference_uri(uri)
+        self.parse_rdf(r)
+        if not self.valid_skos(uri):
+            exit()
+
+        # get the prefLabel regardless of options set
+        self.get_prefLabel(uri, lang=skos_params.get('lang'))
+
+        # only get this if the arg altLabels=true
+        if skos_params.get('altLabels'):
+            self.get_altLabels(uri)
+
+        # only get this if the arg narrower=true
+        if skos_params.get('narrower'):
+            self.get_narrower(uri)
+
+        # only get this if the arg broader=true
+        if skos_params.get('broader'):
+            self.get_broader(uri)
 
     def valid_command_line_args(self, skos_params):
         """Ensure that we receive valid command line args
@@ -48,6 +71,8 @@ class ConceptFetcher(object):
         if not CliValuesValidator.is_a_uri(potential_uri):
             raise Exception('The skos_concept_uri netCDF header value {} is not a valid URI.', potential_uri)
 
+        return True
+
     def dereference_uri(self, uri):
         """Get the RDF data for the Concept via dereferencing the given URI
 
@@ -57,6 +82,7 @@ class ConceptFetcher(object):
         # get the RDF for this concept by dereferencing the URI
         # TODO: enable redirect following based on the status code (i.e. perhaps 303 & 302 but not 301 or whatever)
         s = requests.Session()
+        s.headers['Accept'] = 'text/turtle,application/rdf+xml'
         s.max_redirects = 3  # TODO: review this magic number
         r = s.get(uri)
         # fail if not 20x status code
@@ -67,33 +93,143 @@ class ConceptFetcher(object):
     def get_rdflib_rdf_format(self, mimetype):
         # we must have a response with one of the RDF datatype headers
         # TODO: review all the mimetypes handled by rdflib
-        formats = {
-            'text/turtle': 'turtle',
-            'text/ntriples': 'nt',
-            'text/n3': 'nt',
-            'application/rdf+xml': 'xml',
-            'application/rdf+json': 'json-ld',
-        }
+        if 'text/turtle' in mimetype:
+            return 'turtle'
 
-        return formats[mimetype]
+        if 'text/ntriples' in mimetype:
+            return 'nt'
 
-    def valid_rdf(self, http_response):
+        if 'text/nt' in mimetype:
+            return 'nt'
+
+        if 'text/n3' in mimetype:
+            return 'nt'
+
+        if 'application/rdf+xml' in mimetype:
+            return 'rdf'
+
+        if 'application/rdf+json' in mimetype:
+            return 'json-ld'
+
+        raise Exception('A valid rdflib RDF format was not found')
+
+    def parse_rdf(self, http_response):
         # this parsing will raise an rdflib error if the RDF is broken
         g = rdflib.Graph().parse(
             StringIO(http_response.content),
-            format=self.get_rdflib_rdf_format(http_response.headers.get['Content-Type'])
+            format=self.get_rdflib_rdf_format(http_response.headers.get('Content-Type'))
         )
 
-        return g
+        self.g = g
 
-    def valid_skos(self, rdf_graph):
-        pass
+    def valid_skos(self, uri):
+        """Here we are NOT validating SKOS per se, we are only validating the minimum requirement for a Concept label
+        retrieval
 
-    def get_concept_info(self):
-        prefLabel = 'nick'
-        return {
-            'skos_prefLabel': prefLabel
+        :param rdf_graph: SKOS Concept graph
+        :return: bool
+        """
+        # is there a skos:Concept declaration for the URI and does it have a skos:prefLabel?
+        q = '''
+            PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+            ASK
+            WHERE {
+                ?c ?p ?o .
+                <''' + uri + '''> a skos:Concept .
+                ?c skos:prefLabel ?pl .
+            }
+        '''
+        qres = self.g.query(q)
+        return bool(qres)
+
+    def get_prefLabel(self, uri, lang='en'):
+        pl = None
+        if lang is None: lang = 'en'  # in case some absolute drongo sets the lang to None
+        q = '''
+            PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+            SELECT ?pl
+            WHERE {
+                ?c ?p ?o .
+                <%(uri)s> a skos:Concept .
+                ?c skos:prefLabel ?pl .
+
+                FILTER (lang(?pl) = "%(lang)s")
+            }
+        ''' % {'uri': uri, 'lang': lang}
+        qres = self.g.query(q)
+        for row in qres:
+            pl = row['pl']
+        if pl is not None:
+            self.prefLabel = str(pl)
+        else:
+            raise Exception('Concept does not have a prefLabel in the language you chose ({0})'.format(lang))
+
+    def get_altLabels(self, uri):
+        als = []
+        q = '''
+            PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+            SELECT ?al
+            WHERE {
+                <%(uri)s> a skos:Concept ;
+                    skos:altLabel ?al .
+            }
+        ''' % {'uri': uri}
+        qres = self.g.query(q)
+        for row in qres:
+            als.append(row['al'])
+        if als is not None:
+            self.altLabels = als
+        else:
+            raise Exception('Concept does not have altLabels')
+
+    def get_narrower(self, uri):
+        narrower = []
+        q = '''
+            PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+            SELECT ?n
+            WHERE {
+                <%(uri)s> skos:narrower+ ?n .
+            }
+        ''' % {'uri': uri}
+        qres = self.g.query(q)
+        for row in qres:
+            narrower.append(row['n'])
+        if narrower is not None:
+            self.narrower = narrower
+        else:
+            raise Exception('Concept does not have any narrower Concepts')
+
+    def get_broader(self, uri):
+        broader = []
+        q = '''
+            PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+            SELECT ?b
+            WHERE {
+                <%(uri)s> skos:broader+ ?b .
+            }
+        ''' % {'uri': uri}
+        qres = self.g.query(q)
+        for row in qres:
+            broader.append(row['b'])
+        if broader is not None:
+            self.broader = broader
+        else:
+            raise Exception('Concept does not have any broader Concepts')
+
+    def get_results(self):
+        results = {
+            'skos_prefLabel': self.prefLabel
         }
+        if self.altLabels:
+            results['skos_altLabels'] = str(', '.join(self.altLabels))
+
+        if self.narrower:
+            results['skos_altLabels'] = str(', '.join(self.narrower))
+
+        if self.broader:
+            results['skos_altLabels'] = str(', '.join(self.broader))
+
+        return results
 
 
 class CliValuesValidator:
@@ -294,7 +430,8 @@ class CliValuesValidator:
         'zu'
     ]
 
-    def is_a_uri(self, uri_candidate):
+    @staticmethod
+    def is_a_uri(uri_candidate):
         """
         Validates a string as a URI
 
