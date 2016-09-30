@@ -111,6 +111,8 @@ class NCLDDump(object):
         logger.debug('ncdump_arguments = %s', ncdump_arguments)
         logger.debug('skos_option_dict = %s', skos_option_dict)
         
+        assert '-x' not in ncdump_arguments, 'XML output not yet supported (coming soon)'
+        
         # Example: '    time:concept_uri = "http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/time" ;'
         attribute_regex_string = '^\s*(\w+):' + NCLDDump.ATTRIBUTE_NAME + '\s*=\s*"(http(s*)://.*)"\s*;\s*$' 
         logger.debug('attribute_regex_string = %s', attribute_regex_string)
