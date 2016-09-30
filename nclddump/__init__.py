@@ -15,8 +15,8 @@ from distutils.util import strtobool
 
 # Set handler for root logger to standard output
 console_handler = logging.StreamHandler(sys.stdout)
-#console_handler.setLevel(logging.INFO)
-console_handler.setLevel(logging.DEBUG)
+console_handler.setLevel(logging.INFO)
+#console_handler.setLevel(logging.DEBUG)
 console_formatter = logging.Formatter('%(message)s')
 console_handler.setFormatter(console_formatter)
 logging.root.addHandler(console_handler)
@@ -137,7 +137,6 @@ class NCLDDump(object):
         input_spool.seek(0)
         
         for line in input_spool.readlines():
-            line = line.replace('\n', '')
             logger.debug('line = %s', line)
             
             attribute_match = re.match(attribute_regex, line)
@@ -152,10 +151,10 @@ class NCLDDump(object):
                 for key, value in attribute_value_dict.items():
                     output_spool.write(line.replace(variable_name + ':' + NCLDDump.ATTRIBUTE_NAME,
                                                     variable_name + ':' + key
-                                                    ).replace(uri, value) + '\n'
+                                                    ).replace(uri, value)
                                        )                
             else:
-                output_spool.write(line + '\n')  
+                output_spool.write(line)
          
         input_spool.close()
         output_spool.seek(0)
