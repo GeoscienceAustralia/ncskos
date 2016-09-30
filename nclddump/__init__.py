@@ -142,10 +142,10 @@ class NCLDDump(object):
         input_spool.write(subprocess.check_output(ncdump_command))
         input_spool.seek(0)
         
-        for line in input_spool.readlines():
-            logger.debug('line = %s', line)
+        for input_line in input_spool.readlines():
+            logger.debug('input_line = %s', input_line)
             
-            attribute_match = re.match(attribute_regex, line)
+            attribute_match = re.match(attribute_regex, input_line)
             if attribute_match is not None:
                 try:
                     variable_name = attribute_regex.group(1)
@@ -157,16 +157,18 @@ class NCLDDump(object):
                     
                     # Write each key:value pair as a separate line
                     for key, value in attribute_value_dict.items():
-                        output_spool.write(line.replace(variable_name + ':' + NCLDDump.ATTRIBUTE_NAME,
-                                                        variable_name + ':' + key
-                                                        ).replace(uri, value)
-                                           )
+                        modified_line = input_line.replace(variable_name + ':' + NCLDDump.ATTRIBUTE_NAME,
+                                                variable_name + ':' + key
+                                                ).replace(uri, value)
+                        logger.debug('modified_line = %s', modified_line)
+                        output_spool.write(modified_line)
+                        
                     continue # Process next line
                 except Exception, e:
-                    logger.warning('URI resolution failed for %s\n%s', uri, e.message)
-                    pass # Output original line   
+                    logger.warning('URI resolution failed for %s: %s', uri, e.message)
+                    pass # Fall back to original line  
                             
-            output_spool.write(line)
+            output_spool.write(input_line) # Output original line
          
         input_spool.close()
         output_spool.seek(0)
