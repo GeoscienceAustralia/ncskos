@@ -147,21 +147,26 @@ class NCLDDump(object):
             
             attribute_match = re.match(attribute_regex, line)
             if attribute_match is not None:
-                variable_name = attribute_regex.group(1)
-                uri = attribute_regex.group(2)
-                logger.debug('variable_name = %s, uri = %s', variable_name, uri)
-                
-                attribute_value_dict = self.resolve_skos_uri(uri, skos_option_dict)
-                logger.debug('attribute_value_dict = %s', attribute_value_dict)
-                
-                # Write each key:value pair as a separate line
-                for key, value in attribute_value_dict.items():
-                    output_spool.write(line.replace(variable_name + ':' + NCLDDump.ATTRIBUTE_NAME,
-                                                    variable_name + ':' + key
-                                                    ).replace(uri, value)
-                                       )                
-            else:
-                output_spool.write(line)
+                try:
+                    variable_name = attribute_regex.group(1)
+                    uri = attribute_regex.group(2)
+                    logger.debug('variable_name = %s, uri = %s', variable_name, uri)
+                    
+                    attribute_value_dict = self.resolve_skos_uri(uri, skos_option_dict)
+                    logger.debug('attribute_value_dict = %s', attribute_value_dict)
+                    
+                    # Write each key:value pair as a separate line
+                    for key, value in attribute_value_dict.items():
+                        output_spool.write(line.replace(variable_name + ':' + NCLDDump.ATTRIBUTE_NAME,
+                                                        variable_name + ':' + key
+                                                        ).replace(uri, value)
+                                           )
+                    continue # Process next line
+                except Exception, e:
+                    logger.warning('URI resolution failed for %s\n%s', uri, e.message)
+                    pass # Output original line   
+                            
+            output_spool.write(line)
          
         input_spool.close()
         output_spool.seek(0)
