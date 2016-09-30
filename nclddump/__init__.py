@@ -39,7 +39,7 @@ class NCLDDump(object):
         '''
         if arguments is not None:
             for line in self.process_ncdump(arguments):
-                print line
+                print line.replace(os.linesep, '')
             
     def resolve_skos_uri(self, uri, skos_options_dict=None):
         '''
