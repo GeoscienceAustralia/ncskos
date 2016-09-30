@@ -11,6 +11,7 @@ import os
 import logging
 import subprocess
 import tempfile
+from distutils.util import strtobool
 
 # Set handler for root logger to standard output
 console_handler = logging.StreamHandler(sys.stdout)
@@ -24,12 +25,17 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG) # Initial logging level for this module
 
 class NCLDDump(object):
+    '''
+    Class definition for NCLDDump to implement prototype nclddump command
+    Wraps ncdump to perform SKOS vocabulary lookups and substitute these into the CDL output
+    '''
     ATTRIBUTE_NAME = 'skos_concept_uri'
     MAX_MEM = 1000000000 # 1GB?
     
     def __init__(self, arguments=None):
         '''
         NCLDDump constructor
+        @param arguments: ncdump arguments with optional "--skos <skos_option>=<value>..." arguments
         '''
         if arguments is not None:
             for line in self.process_ncdump(arguments):
@@ -47,16 +53,19 @@ class NCLDDump(object):
 
     def process_ncdump(self, arguments):
         '''
-        Function to perform link resolution and text substitution on ncdump output
-        @param arguments: List of command line arguments
+        Function to perform skos URI resolution and text substitution on ncdump output
+        @param arguments: ncdump arguments with optional "--skos <skos_option>=<value> <skos_option>=<value>..." arguments
         
-        Returns:
-            ncdump_arguments: List of ncdump arguments
-            skos_option_dict: Dict containing <key>:<value> SKOS options
+        Returns
+            file-like object containing modified ncdump output
         '''
         def get_skos_args(arguments):
             '''
             Helper function to split SKOS options from ncdump arguments
+        
+            Returns:
+                ncdump_arguments: List of ncdump arguments
+                skos_option_dict: Dict containing <key>:<value> SKOS options
             '''
             key_value_regex = re.compile('(\w+)=(.*)')
             ncdump_arguments = []
@@ -78,10 +87,10 @@ class NCLDDump(object):
                         try:
                             value = float(value)
                         except ValueError:
-                            if re.match('True', value, re.I):
-                                value = True
-                            elif re.match('False', value, re.I):
-                                value = False
+                            try:
+                                value = strtobool(value)
+                            except ValueError:
+                                pass # No change to string value  
                         
                         skos_option_dict[key] = value
                         continue
@@ -115,7 +124,7 @@ class NCLDDump(object):
                                                    #dir=None
                                                    )
         
-        #TODO: Work out whether we actually need to do this - could be overkill
+        #TODO: Work out whether we actually need to do this - could be overkill if we are only writing to stdout
         output_spool = tempfile.SpooledTemporaryFile(max_size=NCLDDump.MAX_MEM, 
                                                    mode='w+', 
                                                    bufsize=-1,
@@ -148,4 +157,6 @@ class NCLDDump(object):
                 output_spool.write(line)  
          
         input_spool.close()
+        output_spool.seek(0)
+        
         return output_spool
