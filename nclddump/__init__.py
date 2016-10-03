@@ -14,6 +14,7 @@ import logging
 import subprocess
 import tempfile
 from distutils.util import strtobool
+from ld_functions import ConceptFetcher 
 
 # Set handler for root logger to standard output
 console_handler = logging.StreamHandler(sys.stdout)
@@ -43,15 +44,14 @@ class NCLDDump(object):
             for line in self.process_ncdump(arguments):
                 print line.replace(os.linesep, '')
             
-    def resolve_skos_uri(self, uri, skos_options_dict=None):
+    def resolve_skos_uri(self, uri, skos_options_dict={}):
         '''
         Function to resolve Linked Data URI and return results as <key>:<value> dict
         @param skos_options_dict: <key>:<value> dict containing SKOS options
         '''
-        skos_options_dict = skos_options_dict or {}
-        
-        #TODO: Replace stub with Nick's link resolving code
-        return {'skos_stuff': 'Freddo Frog'}
+        #TODO: Split functionality so that we can re-use one ConceptFetcher without re-checking the same options over and over
+        concept_fetcher = ConceptFetcher(skos_options_dict, uri)
+        return concept_fetcher.get_results()
 
     def process_ncdump(self, arguments):
         '''
@@ -111,6 +111,9 @@ class NCLDDump(object):
         logger.debug('ncdump_arguments = %s', ncdump_arguments)
         logger.debug('skos_option_dict = %s', skos_option_dict)
         
+        assert '-x' not in ncdump_arguments, 'XML output not yet supported (coming soon)'
+        
+        #TODO: Investigate issues around global attributes. This regex will only work with simple variable attributes
         # Example: '    time:concept_uri = "http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/time" ;'
         attribute_regex_string = '^\s*(\w+):' + NCLDDump.ATTRIBUTE_NAME + '\s*=\s*"(http(s*)://.*)"\s*;\s*$' 
         logger.debug('attribute_regex_string = %s', attribute_regex_string)
@@ -128,7 +131,7 @@ class NCLDDump(object):
                                                    )
         
         #TODO: Work out whether we actually need to do this.
-        # This might be overkill if we are only writing to stdout - could just print
+        # This might be overkill if we are only writing to stdout - we could just print
         output_spool = tempfile.SpooledTemporaryFile(max_size=NCLDDump.MAX_MEM, 
                                                    mode='w+', 
                                                    bufsize=-1,
@@ -140,26 +143,33 @@ class NCLDDump(object):
         input_spool.write(subprocess.check_output(ncdump_command))
         input_spool.seek(0)
         
-        for line in input_spool.readlines():
-            logger.debug('line = %s', line)
+        for input_line in input_spool.readlines():
+            logger.debug('input_line = %s', input_line)
             
-            attribute_match = re.match(attribute_regex, line)
+            attribute_match = re.match(attribute_regex, input_line)
             if attribute_match is not None:
-                variable_name = attribute_regex.group(1)
-                uri = attribute_regex.group(2)
-                logger.debug('variable_name = %s, uri = %s', variable_name, uri)
-                
-                attribute_value_dict = self.resolve_skos_uri(uri, skos_option_dict)
-                logger.debug('attribute_value_dict = %s', attribute_value_dict)
-                
-                # Write each key:value pair as a separate line
-                for key, value in attribute_value_dict.items():
-                    output_spool.write(line.replace(variable_name + ':' + NCLDDump.ATTRIBUTE_NAME,
-                                                    variable_name + ':' + key
-                                                    ).replace(uri, value)
-                                       )                
-            else:
-                output_spool.write(line)
+                try:
+                    variable_name = attribute_regex.group(1)
+                    uri = attribute_regex.group(2)
+                    logger.debug('variable_name = %s, uri = %s', variable_name, uri)
+                    
+                    attribute_value_dict = self.resolve_skos_uri(uri, skos_option_dict)
+                    logger.debug('attribute_value_dict = %s', attribute_value_dict)
+                    
+                    # Write each key:value pair as a separate line
+                    for key, value in attribute_value_dict.items():
+                        modified_line = input_line.replace(variable_name + ':' + NCLDDump.ATTRIBUTE_NAME,
+                                                           variable_name + ':' + key
+                                                           ).replace(uri, value)
+                        logger.debug('modified_line = %s', modified_line)
+                        output_spool.write(modified_line)
+                        
+                    continue # Process next input line
+                except Exception, e:
+                    logger.warning('URI resolution failed for %s: %s', uri, e.message)
+                    pass # Fall back to original input line  
+                            
+            output_spool.write(input_line) # Output original line
          
         input_spool.close()
         output_spool.seek(0)
