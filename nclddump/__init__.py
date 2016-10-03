@@ -14,6 +14,7 @@ import logging
 import subprocess
 import tempfile
 from distutils.util import strtobool
+from ld_functions import ConceptFetcher 
 
 # Set handler for root logger to standard output
 console_handler = logging.StreamHandler(sys.stdout)
@@ -43,15 +44,14 @@ class NCLDDump(object):
             for line in self.process_ncdump(arguments):
                 print line.replace(os.linesep, '')
             
-    def resolve_skos_uri(self, uri, skos_options_dict=None):
+    def resolve_skos_uri(self, uri, skos_options_dict={}):
         '''
         Function to resolve Linked Data URI and return results as <key>:<value> dict
         @param skos_options_dict: <key>:<value> dict containing SKOS options
         '''
-        skos_options_dict = skos_options_dict or {}
-        
-        #TODO: Replace stub with Nick's link resolving code
-        return {'skos_stuff': 'Freddo Frog'}
+        #TODO: Split functionality so that we can re-use one ConceptFetcher without re-checking the same options over and over
+        concept_fetcher = ConceptFetcher(skos_options_dict, uri)
+        return concept_fetcher.get_results()
 
     def process_ncdump(self, arguments):
         '''
