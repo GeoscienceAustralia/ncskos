@@ -159,8 +159,8 @@ class NCLDDump(object):
                     # Write each key:value pair as a separate line
                     for key, value in attribute_value_dict.items():
                         modified_line = input_line.replace(variable_name + ':' + NCLDDump.ATTRIBUTE_NAME,
-                                                variable_name + ':' + key
-                                                ).replace(uri, value)
+                                                           variable_name + ':' + key
+                                                           ).replace(uri, value)
                         logger.debug('modified_line = %s', modified_line)
                         output_spool.write(modified_line)
                         
