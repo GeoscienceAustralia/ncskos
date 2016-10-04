@@ -38,7 +38,7 @@ class NCLDDump(object):
     def __init__(self, arguments=None):
         '''
         NCLDDump constructor
-        @param arguments: ncdump arguments with optional "--skos <skos_option>=<value>..." arguments
+        :param arguments: ncdump arguments with optional "--skos <skos_option>=<value>..." arguments
         '''
         if arguments is not None:
             for line in self.process_ncdump(arguments):
@@ -47,18 +47,16 @@ class NCLDDump(object):
     def process_ncdump(self, arguments):
         '''
         Function to perform skos URI resolution and text substitution on ncdump output
-
-        Returns
-            file-like object containing modified ncdump output
+        :param arguments: ncdump arguments with optional "--skos <skos_option>=<value>..." arguments
+        :return: file-like object containing modified ncdump output
         '''        
         def get_skos_args(arguments):
             '''
             Helper function to split SKOS options from ncdump arguments
-            @param arguments: ncdump arguments with optional "--skos <skos_option>=<value> <skos_option>=<value>..." arguments
+            :param arguments: ncdump arguments with optional "--skos <skos_option>=<value> <skos_option>=<value>..." arguments
         
-            Returns:
-                ncdump_arguments: List of ncdump arguments WITHOUT optional "--skos <skos_option>=<value> <skos_option>=<value>..." arguments
-                skos_option_dict: Dict containing <key>:<value> SKOS options
+            :return: ncdump_arguments: List of ncdump arguments WITHOUT optional "--skos <skos_option>=<value> <skos_option>=<value>..." arguments
+            :return: skos_option_dict: Dict containing <key>:<value> SKOS options
             '''
             key_value_regex = re.compile('(\w+)=(.*)')
             ncdump_arguments = []
@@ -140,9 +138,10 @@ class NCLDDump(object):
             
             attribute_match = re.match(attribute_regex, input_line)
             if attribute_match is not None:
-                try:
-                    variable_name = attribute_regex.group(1)
-                    uri = attribute_regex.group(2)
+                if True:# try:
+                    logger.debug('attribute_match.groups() = %s', attribute_match.groups())
+                    variable_name = attribute_match.group(1)
+                    uri = attribute_match.group(2)
                     logger.debug('variable_name = %s, uri = %s', variable_name, uri)
                     
                     skos_lookup_dict = concept_fetcher.get_results(uri)
@@ -157,8 +156,8 @@ class NCLDDump(object):
                         output_spool.write(modified_line)
                         
                     continue # Process next input line
-                except Exception, e:
-                    logger.warning('URI resolution failed for %s: %s', uri, e.message)
+                else:# except Exception, e:
+#                    logger.warning('URI resolution failed for %s: %s', uri, e.message)
                     pass # Fall back to original input line  
                             
             output_spool.write(input_line) # Output original line

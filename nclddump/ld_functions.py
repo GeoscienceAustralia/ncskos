@@ -125,6 +125,11 @@ class ConceptFetcher(object):
         return bool(qres)
 
     def get_prefLabel(self, uri, lang='en'):
+        """Get the prefLabel for the given Concept URI
+
+        :param uri: a valid URI for a SKOS Concept
+        :return: string prefLabel
+        """
         pl = None
         if lang is None: lang = 'en'  # in case some absolute drongo sets the lang to None
         q = '''
@@ -147,6 +152,11 @@ class ConceptFetcher(object):
             raise Exception('Concept does not have a prefLabel in the language you chose ({0})'.format(lang))
 
     def get_altLabels(self, uri):
+        """Get the comma separated list of altLabels for the given Concept URI
+
+        :param uri: a valid URI for a SKOS Concept
+        :return: string containing altLabels as a comma separated list
+        """
         als = []
         q = '''
             PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
@@ -165,6 +175,11 @@ class ConceptFetcher(object):
             raise Exception('Concept does not have altLabels')
 
     def get_narrower(self, uri):
+        """Get the comma separated list of narrower concepts for the given Concept URI
+
+        :param uri: a valid URI for a SKOS Concept
+        :return: string containing narrower concepts as a comma separated list
+        """
         narrower = []
         q = '''
             PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
@@ -182,6 +197,11 @@ class ConceptFetcher(object):
             raise Exception('Concept does not have any narrower Concepts')
 
     def get_broader(self, uri):
+        """Get the comma separated list of broader concepts for the given Concept URI
+
+        :param uri: a valid URI for a SKOS Concept
+        :return: string containing broader concepts as a comma separated list
+        """
         broader = []
         q = '''
             PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
@@ -199,6 +219,11 @@ class ConceptFetcher(object):
             raise Exception('Concept does not have any broader Concepts')
 
     def get_results(self, uri):
+        """Get the full SKOS results for the given Concept URI
+
+        :param uri: a valid URI for a SKOS Concept
+        :return: dict containing all results specified in self.skos_params
+        """
         if not self.valid_skos_concept_uri(uri):
             exit()
             
