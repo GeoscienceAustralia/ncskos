@@ -99,7 +99,7 @@ class NCLDDump(object):
         logger.debug('ncdump_arguments = %s', ncdump_arguments)
         logger.debug('skos_option_dict = %s', skos_option_dict)
         
-        xml_output = bool([arg for arg in ncdump_arguments if not re.match('-\w*x\w*', arg)])
+        xml_output = (len([arg for arg in ncdump_arguments if re.match('\-\w*x\w*', arg)]) > 0)
         assert not xml_output, 'XML output not yet supported (coming soon)'        
         
         concept_fetcher = ConceptFetcher(skos_option_dict)
