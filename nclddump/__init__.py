@@ -1,11 +1,11 @@
-'''
+"""
 Class definition for NCLDDump to implement prototype nclddump command
 Wraps ncdump to perform SKOS vocabulary lookups and substitute these into the CDL output
 
 Created on 30 Sep 2016
 
 @author: Alex Ip
-'''
+"""
 
 import sys
 import re
@@ -28,11 +28,12 @@ logging.root.addHandler(console_handler)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO) # Logging level for this module
 
+
 class NCLDDump(object):
-    '''
+    """
     Class definition for NCLDDump to implement prototype nclddump command
     Wraps ncdump to perform SKOS vocabulary lookups and substitute these into the CDL output
-    '''
+    """
     SKOS_ATTRIBUTE = 'skos_concept_uri' # Attribute name for SKOS URIs
     MAX_MEM = 1000000000 # Limit before switching from stringIO to file (1GB?)
     
@@ -46,19 +47,19 @@ class NCLDDump(object):
                 print line.replace(os.linesep, '')
             
     def process_ncdump(self, arguments):
-        '''
+        """
         Function to perform skos URI resolution and text substitution on ncdump output
         :param arguments: ncdump arguments with optional "--skos <skos_option>=<value>..." arguments
         :return: file-like object containing modified ncdump output
-        '''        
+        """
         def get_skos_args(arguments):
-            '''
+            """
             Helper function to split SKOS options from ncdump arguments
             :param arguments: ncdump arguments with optional "--skos <skos_option>=<value> <skos_option>=<value>..." arguments
         
             :return: ncdump_arguments: List of ncdump arguments WITHOUT optional "--skos <skos_option>=<value> <skos_option>=<value>..." arguments
             :return: skos_option_dict: Dict containing <key>:<value> SKOS options
-            '''
+            """
             key_value_regex = re.compile('(\w+)=(.*)')
             ncdump_arguments = []
             skos_option_dict = {}
@@ -66,8 +67,8 @@ class NCLDDump(object):
             skos_args = False
             for arg in arguments:
                 if skos_args:
-                    if arg[0] == '-': # New switch
-                        skos_args = False # Keep processing non-SKOS arg (no "continue")
+                    if arg[0] == '-':  # New switch
+                        skos_args = False  # Keep processing non-SKOS arg (no "continue")
                     else:
                         key_value_match = re.search(key_value_regex, arg)
                         assert key_value_match is not None, 'SKOS options must be expressed as <key>=<value>'
@@ -82,7 +83,7 @@ class NCLDDump(object):
                             try:
                                 value = bool(strtobool(value))
                             except ValueError:
-                                pass # No change to string value  
+                                pass  # No change to string value
                         
                         skos_option_dict[key] = value
                         continue
@@ -115,7 +116,7 @@ class NCLDDump(object):
                                                    #dir=None
                                                    )
         
-        #TODO: Work out whether we actually need to do this.
+        # TODO: Work out whether we actually need to do this.
         # This might be overkill if we are only writing to stdout - we could just print
         output_spool = tempfile.SpooledTemporaryFile(max_size=NCLDDump.MAX_MEM, 
                                                    mode='w+', 
@@ -130,7 +131,7 @@ class NCLDDump(object):
         
         if xml_output:
             netcdf_tree = etree.fromstring(input_spool.read())
-            input_spool.close() # We don't need this any more
+            input_spool.close()  # We don't need this any more
             
             namespace = '{' + netcdf_tree.nsmap[None] + '}'
             
@@ -163,8 +164,8 @@ class NCLDDump(object):
                                                                                  xml_declaration=True, 
                                                                                  encoding="UTF-8")))
             
-        else: # CDL output
-            #TODO: Investigate issues around global attributes. This regex will only work with simple variable attributes
+        else:  # CDL output
+            # TODO: Investigate issues around global attributes. This regex will only work with simple variable attributes
             # Example: '    time:concept_uri = "http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/time" ;'
             attribute_regex_string = '^\s*(\w+):' + NCLDDump.SKOS_ATTRIBUTE + '\s*=\s*"(http(s*)://.*)"\s*;\s*$' 
             logger.debug('attribute_regex_string = %s', attribute_regex_string)
@@ -192,15 +193,15 @@ class NCLDDump(object):
                             logger.debug('modified_line = %s', modified_line)
                             output_spool.write(modified_line)
                             
-                        continue # Process next input line
+                        continue  # Process next input line
                     except Exception, e:
                         logger.warning('URI resolution failed for %s: %s', uri, e.message)
-                        pass # Fall back to original input line  
+                        pass  # Fall back to original input line
                                 
-                output_spool.write(input_line) # Output original line
+                output_spool.write(input_line)  # Output original line
          
             input_spool.close()
             
-        output_spool.seek(0) # Rewind output_spool ready for reading
+        output_spool.seek(0)  # Rewind output_spool ready for reading
         
         return output_spool
