@@ -32,7 +32,7 @@ class NCLDDump(object):
     Class definition for NCLDDump to implement prototype nclddump command
     Wraps ncdump to perform SKOS vocabulary lookups and substitute these into the CDL output
     '''
-    ATTRIBUTE_NAME = 'skos_concept_uri' # Attribute name for SKOS URIs
+    SKOS_ATTRIBUTE = 'skos_concept_uri' # Attribute name for SKOS URIs
     MAX_MEM = 1000000000 # Limit before switching from stringIO to file (1GB?)
     
     def __init__(self, arguments=None):
@@ -44,30 +44,20 @@ class NCLDDump(object):
             for line in self.process_ncdump(arguments):
                 print line.replace(os.linesep, '')
             
-    def resolve_skos_uri(self, uri, skos_options_dict={}):
-        '''
-        Function to resolve Linked Data URI and return results as <key>:<value> dict
-        @param skos_options_dict: <key>:<value> dict containing SKOS options
-        '''
-        #TODO: Split functionality so that we can re-use one ConceptFetcher without re-checking the same options over and over
-        concept_fetcher = ConceptFetcher(skos_options_dict, uri)
-        return concept_fetcher.get_results()
-
     def process_ncdump(self, arguments):
         '''
         Function to perform skos URI resolution and text substitution on ncdump output
-        @param arguments: ncdump arguments with optional "--skos <skos_option>=<value> <skos_option>=<value>..." arguments
-        
+
         Returns
             file-like object containing modified ncdump output
-        '''
+        '''        
         def get_skos_args(arguments):
             '''
             Helper function to split SKOS options from ncdump arguments
             @param arguments: ncdump arguments with optional "--skos <skos_option>=<value> <skos_option>=<value>..." arguments
         
             Returns:
-                ncdump_arguments: List of ncdump arguments
+                ncdump_arguments: List of ncdump arguments WITHOUT optional "--skos <skos_option>=<value> <skos_option>=<value>..." arguments
                 skos_option_dict: Dict containing <key>:<value> SKOS options
             '''
             key_value_regex = re.compile('(\w+)=(.*)')
@@ -111,11 +101,13 @@ class NCLDDump(object):
         logger.debug('ncdump_arguments = %s', ncdump_arguments)
         logger.debug('skos_option_dict = %s', skos_option_dict)
         
-        assert '-x' not in ncdump_arguments, 'XML output not yet supported (coming soon)'
+        assert '-x' not in ncdump_arguments, 'XML output not yet supported (coming soon)'        
+        
+        concept_fetcher = ConceptFetcher(skos_option_dict)
         
         #TODO: Investigate issues around global attributes. This regex will only work with simple variable attributes
         # Example: '    time:concept_uri = "http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/time" ;'
-        attribute_regex_string = '^\s*(\w+):' + NCLDDump.ATTRIBUTE_NAME + '\s*=\s*"(http(s*)://.*)"\s*;\s*$' 
+        attribute_regex_string = '^\s*(\w+):' + NCLDDump.SKOS_ATTRIBUTE + '\s*=\s*"(http(s*)://.*)"\s*;\s*$' 
         logger.debug('attribute_regex_string = %s', attribute_regex_string)
         attribute_regex = re.compile(attribute_regex_string)
         
@@ -153,12 +145,12 @@ class NCLDDump(object):
                     uri = attribute_regex.group(2)
                     logger.debug('variable_name = %s, uri = %s', variable_name, uri)
                     
-                    attribute_value_dict = self.resolve_skos_uri(uri, skos_option_dict)
-                    logger.debug('attribute_value_dict = %s', attribute_value_dict)
+                    skos_lookup_dict = concept_fetcher.get_results(uri)
+                    logger.debug('skos_lookup_dict = %s', skos_lookup_dict)
                     
                     # Write each key:value pair as a separate line
-                    for key, value in attribute_value_dict.items():
-                        modified_line = input_line.replace(variable_name + ':' + NCLDDump.ATTRIBUTE_NAME,
+                    for key, value in skos_lookup_dict.items():
+                        modified_line = input_line.replace(variable_name + ':' + NCLDDump.SKOS_ATTRIBUTE,
                                                            variable_name + ':' + key
                                                            ).replace(uri, value)
                         logger.debug('modified_line = %s', modified_line)

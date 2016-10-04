@@ -9,34 +9,16 @@ from StringIO import StringIO
 
 
 class ConceptFetcher(object):
-    def __init__(self, skos_params, uri):
+    def __init__(self, skos_params):
         """ConceptFetcher constructor
         """
         if not self.valid_command_line_args(skos_params):
             exit()
+            
+        self.skos_params = skos_params
+        
+        self.local_cache_dict = {}
 
-        if not self.valid_skos_concept_uri(uri):
-            exit()
-
-        r = self.dereference_uri(uri)
-        self.parse_rdf(r)
-        if not self.valid_skos(uri):
-            exit()
-
-        # get the prefLabel regardless of options set
-        self.get_prefLabel(uri, lang=skos_params.get('lang'))
-
-        # only get this if the arg altLabels=true
-        if skos_params.get('altLabels'):
-            self.get_altLabels(uri)
-
-        # only get this if the arg narrower=true
-        if skos_params.get('narrower'):
-            self.get_narrower(uri)
-
-        # only get this if the arg broader=true
-        if skos_params.get('broader'):
-            self.get_broader(uri)
 
     def valid_command_line_args(self, skos_params):
         """Ensure that we receive valid command line args
@@ -44,7 +26,7 @@ class ConceptFetcher(object):
         :return: boolean
         """
         # ensure only allowed k/v pairs exist
-        for k, v in skos_params.iteritems():
+        for k in skos_params.keys():
             if k not in CliValuesValidator.keys:
                 raise Exception('The command line argument {0!s} is not valid.', k)
 
@@ -160,7 +142,7 @@ class ConceptFetcher(object):
         for row in qres:
             pl = row['pl']
         if pl is not None:
-            self.prefLabel = str(pl)
+            return str(pl)
         else:
             raise Exception('Concept does not have a prefLabel in the language you chose ({0})'.format(lang))
 
@@ -178,7 +160,7 @@ class ConceptFetcher(object):
         for row in qres:
             als.append(row['al'])
         if als is not None:
-            self.altLabels = als
+            return als
         else:
             raise Exception('Concept does not have altLabels')
 
@@ -195,7 +177,7 @@ class ConceptFetcher(object):
         for row in qres:
             narrower.append(row['n'])
         if narrower is not None:
-            self.narrower = narrower
+            return narrower
         else:
             raise Exception('Concept does not have any narrower Concepts')
 
@@ -212,23 +194,41 @@ class ConceptFetcher(object):
         for row in qres:
             broader.append(row['b'])
         if broader is not None:
-            self.broader = broader
+            return broader
         else:
             raise Exception('Concept does not have any broader Concepts')
 
-    def get_results(self):
+    def get_results(self, uri):
+        if not self.valid_skos_concept_uri(uri):
+            exit()
+            
+        if uri in self.local_cache_dict.keys():
+            return self.local_cache_dict[uri]
+
+        r = self.dereference_uri(uri)
+        self.parse_rdf(r)
+        if not self.valid_skos(uri):
+            exit()
+
+        # get the prefLabel regardless of options set
         results = {
-            'skos_prefLabel': self.prefLabel
+            'skos_prefLabel': self.get_prefLabel(uri, lang=self.skos_params.get('lang'))
         }
-        if self.altLabels:
-            results['skos_altLabels'] = str(', '.join(self.altLabels))
 
-        if self.narrower:
-            results['skos_narrower'] = str(', '.join(self.narrower))
+        # only get this if the arg altLabels=true
+        if self.skos_params.get('altLabels'):
+            results['skos_altLabels'] = str(', '.join(self.get_altLabels(uri)))
 
-        if self.broader:
-            results['skos_broader'] = str(', '.join(self.broader))
+        # only get this if the arg narrower=true
+        if self.skos_params.get('narrower'):
+            results['skos_narrower'] = str(', '.join(self.get_narrower(uri)))
 
+        # only get this if the arg broader=true
+        if self.skos_params.get('broader'):
+            results['skos_broader'] = str(', '.join(self.get_broader(uri)))
+
+        self.local_cache_dict[uri] = results
+        
         return results
 
 
