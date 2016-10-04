@@ -5,15 +5,17 @@ Created on 30 Sep 2016
 import re
 from StringIO import StringIO
 import logging
+
+# Turn off logging for anything we didn't write - it's just plain annoying
+# N.B: This needs to be before the import for requests and rdflib despite whatever pep8 might whinge about
+logging.getLogger('requests').setLevel(logging.WARNING)
+logging.getLogger('rdflib').setLevel(logging.WARNING)
+
 import requests
 import rdflib
 
-# Turn off logging for anything we didn't write - it's just plain annoying
-logging.getLogger('requests').setLevel(logging.WARNING)
-logging.getLogger('rdflib').setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)  # Initial logging level for this module
-
 
 class ConceptFetcher(object):
     def __init__(self, skos_params):
@@ -46,11 +48,11 @@ class ConceptFetcher(object):
 
         # if broader param is present, must be a boolean
         if skos_params.get('broader') and type(skos_params.get('broader')) != bool:
-            raise Exception('An broader argument, if present, must be either "true" or "false"')
+            raise Exception('A broader argument, if present, must be either "true" or "false"')
 
         # if narrower param is present, must be a boolean
         if skos_params.get('narrower') and type(skos_params.get('narrower')) != bool:
-            raise Exception('An narrower argument, if present, must be either "true" or "false"')
+            raise Exception('A narrower argument, if present, must be either "true" or "false"')
 
         # if we've made it this far, the args are valid
         return True
