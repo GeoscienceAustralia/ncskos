@@ -5,8 +5,11 @@ Created on 30 Sep 2016
 import requests
 import re
 import rdflib
+import logging
 from StringIO import StringIO
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO) # Initial logging level for this module
 
 class ConceptFetcher(object):
     def __init__(self, skos_params):

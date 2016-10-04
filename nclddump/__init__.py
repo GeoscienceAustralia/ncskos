@@ -18,7 +18,7 @@ from ld_functions import ConceptFetcher
 
 # Set handler for root logger to standard output
 console_handler = logging.StreamHandler(sys.stdout)
-console_handler.setLevel(logging.INFO)
+console_handler.setLevel(logging.WARNING)
 #console_handler.setLevel(logging.DEBUG)
 console_formatter = logging.Formatter('%(message)s')
 console_handler.setFormatter(console_formatter)
@@ -99,7 +99,8 @@ class NCLDDump(object):
         logger.debug('ncdump_arguments = %s', ncdump_arguments)
         logger.debug('skos_option_dict = %s', skos_option_dict)
         
-        assert '-x' not in ncdump_arguments, 'XML output not yet supported (coming soon)'        
+        xml_output = bool([arg for arg in ncdump_arguments if not re.match('-\w*x\w*', arg)])
+        assert not xml_output, 'XML output not yet supported (coming soon)'        
         
         concept_fetcher = ConceptFetcher(skos_option_dict)
         
