@@ -12,5 +12,5 @@ if __name__ == '__main__':
         'narrower': True,
         'broader': True,
     }
-    g = ld_functions.ConceptFetcher(test_skos_params, 'http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/sea_surface_temperature')
-    print g.get_results()
+    g = ld_functions.ConceptFetcher(test_skos_params)
+    print g.get_results('http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/sea_surface_temperature')
