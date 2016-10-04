@@ -28,7 +28,7 @@ logging.root.addHandler(console_handler)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO) # Logging level for this module
 
-# Turn off logging for anything under requests - it's just plain annoying
+# Turn off logging for anything we didn't write - it's just plain annoying
 logging.getLogger('requests').setLevel(logging.WARNING)
 
 class NCLDDump(object):

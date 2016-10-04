@@ -2,10 +2,14 @@
 Created on 30 Sep 2016
 @author: Nicholas Car
 '''
+import logging
+
+# Turn off logging for anything we didn't write - it's just plain annoying
+logging.getLogger('rdflib').setLevel(logging.WARNING)
+
 import requests
 import re
 import rdflib
-import logging
 from StringIO import StringIO
 
 logger = logging.getLogger(__name__)
