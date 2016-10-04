@@ -132,6 +132,7 @@ class ConceptFetcher(object):
 
         :param uri: a valid URI for a SKOS Concept
         :return: string prefLabel
+        :return: string lang
         """
         pl = None
         if lang is None: lang = 'en'  # in case some absolute drongo sets the lang to None
@@ -150,7 +151,7 @@ class ConceptFetcher(object):
         for row in qres:
             pl = row['pl']
         if pl is not None:
-            return str(pl)
+            return str(pl), lang
         else:
             raise Exception('Concept does not have a prefLabel in the language you chose ({0})'.format(lang))
 
@@ -239,9 +240,8 @@ class ConceptFetcher(object):
             exit()
 
         # get the prefLabel regardless of options set
-        results = {
-            'skos_prefLabel': self.get_prefLabel(uri, lang=self.skos_params.get('lang'))
-        }
+        prefLabel, lang = self.get_prefLabel(uri, lang=self.skos_params.get('lang'))
+        results = {'skos_prefLabel' + '_' + lang: prefLabel}
 
         # only get this if the arg altLabels=true
         if self.skos_params.get('altLabels'):
