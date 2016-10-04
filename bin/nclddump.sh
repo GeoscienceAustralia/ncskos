@@ -5,6 +5,5 @@
 
 # Assume script is in bin directory under module directory
 export PYTHONPATH=$(dirname $(dirname $(readlink -f "$0"))):$PYTHONPATH
-echo $PYTHONPATH
 
 python -m nclddump $@
