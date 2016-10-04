@@ -13,19 +13,20 @@ import os
 import logging
 import subprocess
 import tempfile
+from lxml import etree
 from distutils.util import strtobool
 from ld_functions import ConceptFetcher 
 
 # Set handler for root logger to standard output
 console_handler = logging.StreamHandler(sys.stdout)
-console_handler.setLevel(logging.WARNING)
+console_handler.setLevel(logging.DEBUG)
 #console_handler.setLevel(logging.DEBUG)
 console_formatter = logging.Formatter('%(message)s')
 console_handler.setFormatter(console_formatter)
 logging.root.addHandler(console_handler)
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO) # Initial logging level for this module
+logger.setLevel(logging.INFO) # Logging level for this module
 
 class NCLDDump(object):
     '''
@@ -100,15 +101,8 @@ class NCLDDump(object):
         logger.debug('skos_option_dict = %s', skos_option_dict)
         
         xml_output = (len([arg for arg in ncdump_arguments if re.match('\-\w*x\w*', arg)]) > 0)
-        assert not xml_output, 'XML output not yet supported (coming soon)'        
         
         concept_fetcher = ConceptFetcher(skos_option_dict)
-        
-        #TODO: Investigate issues around global attributes. This regex will only work with simple variable attributes
-        # Example: '    time:concept_uri = "http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/time" ;'
-        attribute_regex_string = '^\s*(\w+):' + NCLDDump.SKOS_ATTRIBUTE + '\s*=\s*"(http(s*)://.*)"\s*;\s*$' 
-        logger.debug('attribute_regex_string = %s', attribute_regex_string)
-        attribute_regex = re.compile(attribute_regex_string)
         
         ncdump_command = ['ncdump'] + ncdump_arguments
         logger.debug('ncdump_command = "%s"', ' '.join(ncdump_command))
@@ -134,36 +128,79 @@ class NCLDDump(object):
         input_spool.write(subprocess.check_output(ncdump_command))
         input_spool.seek(0)
         
-        for input_line in input_spool.readlines():
-            logger.debug('input_line = %s', input_line)
+        if xml_output:
+            netcdf_tree = etree.fromstring(input_spool.read())
+            input_spool.close() # We don't need this any more
             
-            attribute_match = re.match(attribute_regex, input_line)
-            if attribute_match is not None:
-                if True:# try:
-                    logger.debug('attribute_match.groups() = %s', attribute_match.groups())
-                    variable_name = attribute_match.group(1)
-                    uri = attribute_match.group(2)
-                    logger.debug('variable_name = %s, uri = %s', variable_name, uri)
+            namespace = '{' + netcdf_tree.nsmap[None] + '}'
+            
+            for skos_element in [attribute_element for attribute_element in netcdf_tree.iterfind(path='.//' + namespace + 'attribute') 
+                                 if attribute_element.attrib.get('name') == NCLDDump.SKOS_ATTRIBUTE]:
+                
+                logger.debug('skos_element = %s', etree.tostring(skos_element, pretty_print=False))
+                uri = skos_element.attrib['value']
+                logger.debug('uri = %s', uri)
+                
+                skos_lookup_dict = concept_fetcher.get_results(uri)
+                logger.debug('skos_lookup_dict = %s', skos_lookup_dict)
+                
+                parent_element = skos_element.getparent()
+                # Fix up formatting
+                tail = parent_element[0].tail
+                parent_element[-1].tail = tail
+                
+                # Write each key:value pair as a separate element
+                for key, value in skos_lookup_dict.items():
+                    new_element = parent_element.makeelement(skos_element.tag, attrib={'name': key, 'value': value})
+                    new_element.tail = tail
+                    logger.debug('new_element = %s', etree.tostring(new_element, pretty_print=False))
+                    parent_element.append(new_element)
                     
-                    skos_lookup_dict = concept_fetcher.get_results(uri)
-                    logger.debug('skos_lookup_dict = %s', skos_lookup_dict)
-                    
-                    # Write each key:value pair as a separate line
-                    for key, value in skos_lookup_dict.items():
-                        modified_line = input_line.replace(variable_name + ':' + NCLDDump.SKOS_ATTRIBUTE,
-                                                           variable_name + ':' + key
-                                                           ).replace(uri, value)
-                        logger.debug('modified_line = %s', modified_line)
-                        output_spool.write(modified_line)
+                parent_element.remove(skos_element) # Delete original element
+                
+                output_spool.write(re.sub('(\r|\n)+', os.linesep, etree.tostring(netcdf_tree, method='xml', 
+                                                                                 pretty_print=True, 
+                                                                                 xml_declaration=True, 
+                                                                                 encoding="UTF-8")))
+            
+        else: # CDL output
+            #TODO: Investigate issues around global attributes. This regex will only work with simple variable attributes
+            # Example: '    time:concept_uri = "http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/time" ;'
+            attribute_regex_string = '^\s*(\w+):' + NCLDDump.SKOS_ATTRIBUTE + '\s*=\s*"(http(s*)://.*)"\s*;\s*$' 
+            logger.debug('attribute_regex_string = %s', attribute_regex_string)
+            attribute_regex = re.compile(attribute_regex_string)
+            
+            for input_line in input_spool.readlines():
+                logger.debug('input_line = %s', input_line)
+                
+                attribute_match = re.match(attribute_regex, input_line)
+                if attribute_match is not None:
+                    try:
+                        logger.debug('attribute_match.groups() = %s', attribute_match.groups())
+                        variable_name = attribute_match.group(1)
+                        uri = attribute_match.group(2)
+                        logger.debug('variable_name = %s, uri = %s', variable_name, uri)
                         
-                    continue # Process next input line
-                else:# except Exception, e:
-#                    logger.warning('URI resolution failed for %s: %s', uri, e.message)
-                    pass # Fall back to original input line  
+                        skos_lookup_dict = concept_fetcher.get_results(uri)
+                        logger.debug('skos_lookup_dict = %s', skos_lookup_dict)
+                        
+                        # Write each key:value pair as a separate line
+                        for key, value in skos_lookup_dict.items():
+                            modified_line = input_line.replace(variable_name + ':' + NCLDDump.SKOS_ATTRIBUTE,
+                                                               variable_name + ':' + key
+                                                               ).replace(uri, value)
+                            logger.debug('modified_line = %s', modified_line)
+                            output_spool.write(modified_line)
                             
-            output_spool.write(input_line) # Output original line
+                        continue # Process next input line
+                    except Exception, e:
+                        logger.warning('URI resolution failed for %s: %s', uri, e.message)
+                        pass # Fall back to original input line  
+                                
+                output_spool.write(input_line) # Output original line
          
-        input_spool.close()
-        output_spool.seek(0)
+            input_spool.close()
+            
+        output_spool.seek(0) # Rewind output_spool ready for reading
         
         return output_spool
