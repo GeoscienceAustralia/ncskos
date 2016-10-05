@@ -8,6 +8,7 @@ from nclddump import NCLDDump
 
 
 def main():
+    # Print results for command line arguments provided
     NCLDDump(sys.argv[1:])
     
 if __name__ == '__main__':

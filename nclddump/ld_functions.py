@@ -18,12 +18,22 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)  # Initial logging level for this module
 
 class ConceptFetcher(object):
+    # Dict of supported mimetypes
+    VALID_MIMETYPES = {'text/turtle': 'turtle',
+                       'text/ntriples': 'nt',
+                       'text/nt': 'nt',
+                       'text/n3': 'nt',
+                       'application/rdf+xml': 'rdf',
+                       'application/rdf+json': 'json-ld'
+                       }
+    
     def __init__(self, skos_params, debug=False):
         """ConceptFetcher constructor
         :param skos_params: dict containing SKOS options
         :param debug: Boolean debug output flag
         """
         self.set_debug(debug) # Turn debug output on or off as required
+        self.g = None
         
         if not self.valid_command_line_args(skos_params):
             exit()
@@ -90,44 +100,29 @@ class ConceptFetcher(object):
         # we must have a response with one of the RDF datatype headers
         # TODO: review all the mimetypes handled by rdflib
         logger.debug('mimetype = %s', mimetype)
-        if 'text/turtle' in mimetype:
-            rdf_format = 'turtle'
+        
+        rdf_format = ConceptFetcher.VALID_MIMETYPES.get(mimetype.split(';')[0]) # Only look at string before semicolon
 
-        elif 'text/ntriples' in mimetype:
-            rdf_format = 'nt'
-
-        elif 'text/nt' in mimetype:
-            rdf_format = 'nt'
-
-        elif 'text/n3' in mimetype:
-            rdf_format = 'nt'
-
-        elif 'application/rdf+xml' in mimetype:
-            rdf_format = 'rdf'
-
-        elif 'application/rdf+json' in mimetype:
-            rdf_format = 'json-ld'
-            
-        else:
-            raise Exception('A valid rdflib RDF format was not found')
+        if rdf_format is None:
+            raise Exception('%s does not represent a valid rdflib RDF format' % mimetype)
         
         logger.debug('RDF Format = %s', rdf_format)
         return rdf_format
 
     def parse_rdf(self, http_response):
         # this parsing will raise an rdflib error if the RDF is broken
-        g = rdflib.Graph().parse(
-            StringIO(http_response.content),
-            format=self.get_rdflib_rdf_format(http_response.headers.get('Content-Type'))
-        )
+        logger.debug('http_response.content = %s', http_response.content)
+        self.g = rdflib.Graph().parse(StringIO(http_response.content),
+                                      format=self.get_rdflib_rdf_format(http_response.headers.get('Content-Type'))
+                                      )
 
-        self.g = g
+        logger.debug('graph = %s', self.g)
 
     def valid_skos(self, uri):
         """Here we are NOT validating SKOS per se, we are only validating the minimum requirement for a Concept label
         retrieval
 
-        :param rdf_graph: SKOS Concept graph
+        :param uri: Potential SKOS URI
         :return: bool
         """
         # is there a skos:Concept declaration for the URI and does it have a skos:prefLabel?
@@ -201,7 +196,7 @@ class ConceptFetcher(object):
         for row in qres:
             als.append(row['al'])
         if als is not None:
-            return als
+            return sorted(als)
         else:
             raise Exception('Concept does not have altLabels')
 
@@ -227,7 +222,7 @@ class ConceptFetcher(object):
         for row in qres:
             narrower.append(row['n'])
         if narrower is not None:
-            return narrower
+            return sorted(narrower)
         else:
             raise Exception('Concept does not have any narrower Concepts')
 
@@ -253,7 +248,7 @@ class ConceptFetcher(object):
         for row in qres:
             broader.append(row['b'])
         if broader is not None:
-            return broader
+            return sorted(broader)
         else:
             raise Exception('Concept does not have any broader Concepts')
 

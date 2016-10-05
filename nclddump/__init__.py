@@ -1,6 +1,9 @@
 """
 Class definition for NCLDDump to implement prototype nclddump command
-Wraps ncdump to perform SKOS vocabulary lookups and substitute these into the CDL output
+Wraps ncdump to perform SKOS vocabulary lookups and substitute these into the CDL or XML output
+
+Note: This utility requires that the netCDF command line utilities be installed. 
+These utilities are available from: http://www.unidata.ucar.edu/software/netcdf/docs/getting_and_building_netcdf.html
 
 Created on 30 Sep 2016
 
@@ -44,16 +47,19 @@ class NCLDDump(object):
     def __init__(self, arguments=None, debug=False):
         '''
         NCLDDump constructor
-        :param arguments: list of ncdump arguments with optional "--skos <skos_option>=<value>..." arguments
+        :param arguments: optional list of ncdump arguments with additional optional "--skos <skos_option>=<value>..." arguments
         :param debug: Boolean debug output flag
         '''
         self._error = None
+        self.concept_fetcher = None
         
         self.set_debug(debug) # Turn debug output on or off as required
         
+        # Process and print results to standard output if arguments have been provided
         if arguments is not None:
             for line in self.process_ncdump(arguments):
                 print line.replace(os.linesep, '')
+
             
     def process_ncdump(self, arguments):
         """
@@ -114,7 +120,8 @@ class NCLDDump(object):
         
         xml_output = (len([arg for arg in ncdump_arguments if re.match('\-\w*x\w*', arg)]) > 0)
         
-        concept_fetcher = ConceptFetcher(skos_option_dict, self.debug)
+        if not self.concept_fetcher or self.concept_fetcher.skos_params != skos_option_dict:
+            self.concept_fetcher = ConceptFetcher(skos_option_dict, self.debug)
         
         ncdump_command = ' '.join(['ncdump'] + ncdump_arguments)
         logger.debug('ncdump_command = "%s"', ncdump_command)
@@ -159,7 +166,7 @@ class NCLDDump(object):
                 uri = skos_element.attrib['value']
                 logger.debug('uri = %s', uri)
                 
-                skos_lookup_dict = concept_fetcher.get_results(uri)
+                skos_lookup_dict = self.concept_fetcher.get_results(uri)
                 logger.debug('skos_lookup_dict = %s', skos_lookup_dict)
                 
                 parent_element = skos_element.getparent()
@@ -199,7 +206,7 @@ class NCLDDump(object):
                         uri = attribute_match.group(2)
                         logger.debug('variable_name = %s, uri = %s', variable_name, uri)
                         
-                        skos_lookup_dict = concept_fetcher.get_results(uri)
+                        skos_lookup_dict = self.concept_fetcher.get_results(uri)
                         logger.debug('skos_lookup_dict = %s', skos_lookup_dict)
                         
                         # Write each key:value pair as a separate line
