@@ -129,8 +129,11 @@ class NCLDDump(object):
         
         try:
             input_spool.write(subprocess.check_output(ncdump_command))
-        except Exception, e:
-            logger.error('ncdump_command "%s" failed: %s', ' '.join(ncdump_command), e)
+        except subprocess.CalledProcessError as e:
+            pass # Error output will be written to stderr
+            exit(1)
+        except OSError as e:
+            logger.error('ncdump command "%s" failed: %s', ' '.join(ncdump_command), e)
             exit(1)
             
         input_spool.seek(0)
