@@ -6,6 +6,7 @@ Created on 5Oct.,2016
 @author: Alex Ip
 '''
 import unittest
+import os
 from nclddump import NCLDDump
 
 SHOW_DEBUG_OUTPUT=True
@@ -13,8 +14,10 @@ SHOW_DEBUG_OUTPUT=True
 TEST_NC_PATH = 'sst.ltm.1971-2000_skos.nc' # Test file in the same directory as this script
 SKOS_OPTION_LIST = ['--skos', 'lang=pl', 'altLabels=True', 'narrower=True', 'broader=True']
 
-TEST_ARGS = {'CDL': ['-hs', TEST_NC_PATH] + SKOS_OPTION_LIST,
-             'XML': ['-x', TEST_NC_PATH] + SKOS_OPTION_LIST}
+TEST_DIR = os.path.abspath(os.path.dirname(__file__))
+
+TEST_ARGS = {'CDL': ['-hs', os.path.join(TEST_DIR, TEST_NC_PATH)] + SKOS_OPTION_LIST,
+             'XML': ['-x', os.path.join(TEST_DIR, TEST_NC_PATH)] + SKOS_OPTION_LIST}
 
 
 class TestNCLDDump(unittest.TestCase):
