@@ -142,6 +142,8 @@ class ConceptFetcher(object):
         '''
         logger.debug('valid_skos query = %s', q)
         qres = self.g.query(q)
+        logger.debug('valid_skos result = %s', list(qres))
+        
         return bool(qres)
 
     def get_prefLabel(self, uri, lang='en'):
@@ -167,6 +169,8 @@ class ConceptFetcher(object):
         
         logger.debug('get_prefLabel query = %s', q)
         qres = self.g.query(q)
+        logger.debug('get_prefLabel result = %s', list(qres))
+        
         for row in qres:
             pl = row['pl']
         if pl is not None:
@@ -192,6 +196,8 @@ class ConceptFetcher(object):
         
         logger.debug('get_altLabels query = %s', q)
         qres = self.g.query(q)
+        logger.debug('get_altLabels result = %s', list(qres))
+        
         for row in qres:
             als.append(row['al'])
         if als is not None:
@@ -216,6 +222,8 @@ class ConceptFetcher(object):
         
         logger.debug('get_narrower query = %s', q)
         qres = self.g.query(q)
+        logger.debug('get_narrower result = %s', list(qres))
+        
         for row in qres:
             narrower.append(row['n'])
         if narrower is not None:
@@ -240,6 +248,8 @@ class ConceptFetcher(object):
         
         logger.debug('get_broader query = %s', q)
         qres = self.g.query(q)
+        logger.debug('get_broader result = %s', list(qres))
+        
         for row in qres:
             broader.append(row['b'])
         if broader is not None:
