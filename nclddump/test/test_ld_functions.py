@@ -13,4 +13,6 @@ if __name__ == '__main__':
         'broader': True,
     }
     g = ld_functions.ConceptFetcher(test_skos_params, debug=True)
-    print g.get_results('http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_temperature')
+    
+    uri = 'http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_temperature'
+    print 'Results for URI %s:\n%s' % (uri, g.get_results(uri))

@@ -13,7 +13,6 @@ import os
 import logging
 import subprocess
 import tempfile
-from lxml import etree
 from distutils.util import strtobool
 from ld_functions import ConceptFetcher 
 
@@ -29,7 +28,11 @@ if not logging.root.handlers:
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO) # Initial logging level for this module
 
-
+try:
+    from lxml import etree
+except ImportError as e:
+    logger.warning('%s: -x option for XML output will fail', e.message)
+    
 class NCLDDump(object):
     """
     Class definition for NCLDDump to implement prototype nclddump command
@@ -179,9 +182,9 @@ class NCLDDump(object):
                                                                                  encoding="UTF-8")))
             
         else:  # CDL output
-            # TODO: Investigate issues around global attributes. This regex will only work with simple variable attributes
+            # TODO: Investigate potential issues around global attributes - untested.
             # Example: '    time:concept_uri = "http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/time" ;'
-            attribute_regex_string = '^\s*(\w+):' + NCLDDump.SKOS_ATTRIBUTE + '\s*=\s*"(http(s*)://.*)"\s*;\s*$' 
+            attribute_regex_string = '^\s*(\w*):' + NCLDDump.SKOS_ATTRIBUTE + '\s*=\s*"(http(s*)://.*)"\s*;\s*$' 
             logger.debug('attribute_regex_string = %s', attribute_regex_string)
             attribute_regex = re.compile(attribute_regex_string)
             
