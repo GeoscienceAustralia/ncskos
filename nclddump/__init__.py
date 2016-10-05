@@ -66,6 +66,7 @@ class NCLDDump(object):
             
             skos_args = False
             for arg in arguments:
+                arg = arg.strip() # This should deal with any stray EOL characters
                 if skos_args:
                     if arg[0] == '-':  # New switch
                         skos_args = False  # Keep processing non-SKOS arg (no "continue")
@@ -126,7 +127,12 @@ class NCLDDump(object):
                                                    #dir=None
                                                    )
         
-        input_spool.write(subprocess.check_output(ncdump_command))
+        try:
+            input_spool.write(subprocess.check_output(ncdump_command))
+        except Exception, e:
+            logger.error('ncdump_command "%s" failed: %s', ' '.join(ncdump_command), e)
+            exit(1)
+            
         input_spool.seek(0)
         
         if xml_output:
