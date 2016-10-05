@@ -106,8 +106,8 @@ class NCLDDump(object):
         
         concept_fetcher = ConceptFetcher(skos_option_dict)
         
-        ncdump_command = ['ncdump'] + ncdump_arguments
-        logger.debug('ncdump_command = "%s"', ' '.join(ncdump_command))
+        ncdump_command = ' '.join(['ncdump'] + ncdump_arguments)
+        logger.debug('ncdump_command = "%s"', ncdump_command)
         
         input_spool = tempfile.SpooledTemporaryFile(max_size=NCLDDump.MAX_MEM, 
                                                    mode='w+', 
@@ -131,9 +131,6 @@ class NCLDDump(object):
             input_spool.write(subprocess.check_output(ncdump_command, shell=True, stderr=subprocess.STDOUT))
         except subprocess.CalledProcessError as e:
             logger.error(e.output)
-            exit(1)
-        except OSError as e: # This will happen in Linux if the netCDF command line utilities haven't been installed
-            logger.error('ncdump command "%s" failed: %s', ' '.join(ncdump_command), e)
             exit(1)
             
         input_spool.seek(0)
