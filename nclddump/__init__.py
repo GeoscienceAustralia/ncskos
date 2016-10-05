@@ -17,16 +17,17 @@ from lxml import etree
 from distutils.util import strtobool
 from ld_functions import ConceptFetcher 
 
-# Set handler for root logger to standard output
-console_handler = logging.StreamHandler(sys.stdout)
-console_handler.setLevel(logging.DEBUG)
-#console_handler.setLevel(logging.DEBUG)
-console_formatter = logging.Formatter('%(message)s')
-console_handler.setFormatter(console_formatter)
-logging.root.addHandler(console_handler)
+# Set handler for root logger to standard output if no handler exists
+if not logging.root.handlers:
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(logging.DEBUG)
+    #console_handler.setLevel(logging.DEBUG)
+    console_formatter = logging.Formatter('%(message)s')
+    console_handler.setFormatter(console_formatter)
+    logging.root.addHandler(console_handler)
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO) # Logging level for this module
+logger.setLevel(logging.INFO) # Initial logging level for this module
 
 
 class NCLDDump(object):
@@ -37,11 +38,16 @@ class NCLDDump(object):
     SKOS_ATTRIBUTE = 'skos_concept_uri' # Attribute name for SKOS URIs
     MAX_MEM = 1000000000 # Limit before switching from stringIO to file (1GB?)
     
-    def __init__(self, arguments=None):
+    def __init__(self, arguments=None, debug=False):
         '''
         NCLDDump constructor
-        :param arguments: ncdump arguments with optional "--skos <skos_option>=<value>..." arguments
+        :param arguments: list of ncdump arguments with optional "--skos <skos_option>=<value>..." arguments
+        :param debug: Boolean debug output flag
         '''
+        self._error = None
+        
+        self.set_debug(debug) # Turn debug output on or off as required
+        
         if arguments is not None:
             for line in self.process_ncdump(arguments):
                 print line.replace(os.linesep, '')
@@ -98,13 +104,14 @@ class NCLDDump(object):
                     
             return ncdump_arguments, skos_option_dict        
                
+        self._error = None
         ncdump_arguments, skos_option_dict = get_skos_args(arguments)
         logger.debug('ncdump_arguments = %s', ncdump_arguments)
         logger.debug('skos_option_dict = %s', skos_option_dict)
         
         xml_output = (len([arg for arg in ncdump_arguments if re.match('\-\w*x\w*', arg)]) > 0)
         
-        concept_fetcher = ConceptFetcher(skos_option_dict)
+        concept_fetcher = ConceptFetcher(skos_option_dict, self.debug)
         
         ncdump_command = ' '.join(['ncdump'] + ncdump_arguments)
         logger.debug('ncdump_command = "%s"', ncdump_command)
@@ -131,7 +138,8 @@ class NCLDDump(object):
             input_spool.write(subprocess.check_output(ncdump_command, shell=True, stderr=subprocess.STDOUT))
         except subprocess.CalledProcessError as e:
             logger.error(e.output)
-            exit(1)
+            self._error = e.output
+            exit(1) # Don't proceed without ncdump output
             
         input_spool.seek(0)
         
@@ -202,7 +210,8 @@ class NCLDDump(object):
                         continue  # Process next input line
                     except Exception, e:
                         logger.warning('URI resolution failed for %s: %s', uri, e.message)
-                        pass  # Fall back to original input line
+                        self._error = e.message
+                        # Fall back to original input line
                                 
                 output_spool.write(input_line)  # Output original line
          
@@ -211,3 +220,20 @@ class NCLDDump(object):
         output_spool.seek(0)  # Rewind output_spool ready for reading
         
         return output_spool
+    
+    def get_debug(self): 
+        return self._debug
+    
+    def set_debug(self, value): 
+        self._debug = value
+        if self._debug:
+            logger.setLevel(logging.DEBUG)
+        else:
+            logger.setLevel(logging.INFO)
+        
+    debug = property(get_debug, set_debug, doc='Boolean debug output flag')
+    
+    def get_error(self): 
+        return self._error
+        
+    error = property(get_error, doc='Error message or None if no error')

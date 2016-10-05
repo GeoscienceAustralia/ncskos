@@ -18,9 +18,13 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)  # Initial logging level for this module
 
 class ConceptFetcher(object):
-    def __init__(self, skos_params):
+    def __init__(self, skos_params, debug=False):
         """ConceptFetcher constructor
+        :param skos_params: dict containing SKOS options
+        :param debug: Boolean debug output flag
         """
+        self.set_debug(debug) # Turn debug output on or off as required
+        
         if not self.valid_command_line_args(skos_params):
             exit()
             
@@ -30,7 +34,7 @@ class ConceptFetcher(object):
 
     def valid_command_line_args(self, skos_params):
         """Ensure that we receive valid command line args
-
+        :param skos_params: dict containing SKOS options
         :return: boolean
         """
         # ensure only allowed k/v pairs exist
@@ -69,6 +73,7 @@ class ConceptFetcher(object):
         :param uri: a valid URI for a SKOS Concept
         :return: RDF data
         """
+        logger.debug('Dereferencing URI = %s', uri)
         # get the RDF for this concept by dereferencing the URI
         # TODO: enable redirect following based on the status code (i.e. perhaps 303 & 302 but not 301 or whatever)
         s = requests.Session()
@@ -78,30 +83,36 @@ class ConceptFetcher(object):
         # fail if not 20x status code
         r.raise_for_status()
 
+        logger.debug('RDF Data = %s', r)
         return r
 
     def get_rdflib_rdf_format(self, mimetype):
         # we must have a response with one of the RDF datatype headers
         # TODO: review all the mimetypes handled by rdflib
+        logger.debug('mimetype = %s', mimetype)
         if 'text/turtle' in mimetype:
-            return 'turtle'
+            rdf_format = 'turtle'
 
-        if 'text/ntriples' in mimetype:
-            return 'nt'
+        elif 'text/ntriples' in mimetype:
+            rdf_format = 'nt'
 
-        if 'text/nt' in mimetype:
-            return 'nt'
+        elif 'text/nt' in mimetype:
+            rdf_format = 'nt'
 
-        if 'text/n3' in mimetype:
-            return 'nt'
+        elif 'text/n3' in mimetype:
+            rdf_format = 'nt'
 
-        if 'application/rdf+xml' in mimetype:
-            return 'rdf'
+        elif 'application/rdf+xml' in mimetype:
+            rdf_format = 'rdf'
 
-        if 'application/rdf+json' in mimetype:
-            return 'json-ld'
-
-        raise Exception('A valid rdflib RDF format was not found')
+        elif 'application/rdf+json' in mimetype:
+            rdf_format = 'json-ld'
+            
+        else:
+            raise Exception('A valid rdflib RDF format was not found')
+        
+        logger.debug('RDF Format = %s', rdf_format)
+        return rdf_format
 
     def parse_rdf(self, http_response):
         # this parsing will raise an rdflib error if the RDF is broken
@@ -129,6 +140,7 @@ class ConceptFetcher(object):
                 ?c skos:prefLabel ?pl .
             }
         '''
+        logger.debug('valid_skos query = %s', q)
         qres = self.g.query(q)
         return bool(qres)
 
@@ -152,6 +164,8 @@ class ConceptFetcher(object):
                 FILTER (lang(?pl) = "%(lang)s")
             }
         ''' % {'uri': uri, 'lang': lang}
+        
+        logger.debug('get_prefLabel query = %s', q)
         qres = self.g.query(q)
         for row in qres:
             pl = row['pl']
@@ -175,6 +189,8 @@ class ConceptFetcher(object):
                     skos:altLabel ?al .
             }
         ''' % {'uri': uri}
+        
+        logger.debug('get_altLabels query = %s', q)
         qres = self.g.query(q)
         for row in qres:
             als.append(row['al'])
@@ -197,6 +213,8 @@ class ConceptFetcher(object):
                 <%(uri)s> skos:narrower+ ?n .
             }
         ''' % {'uri': uri}
+        
+        logger.debug('get_narrower query = %s', q)
         qres = self.g.query(q)
         for row in qres:
             narrower.append(row['n'])
@@ -219,6 +237,8 @@ class ConceptFetcher(object):
                 <%(uri)s> skos:broader+ ?b .
             }
         ''' % {'uri': uri}
+        
+        logger.debug('get_broader query = %s', q)
         qres = self.g.query(q)
         for row in qres:
             broader.append(row['b'])
@@ -237,6 +257,7 @@ class ConceptFetcher(object):
             exit()
             
         if uri in self.local_cache_dict.keys():
+            logger.debug('URI %s found in cache' % uri)
             return self.local_cache_dict[uri]
 
         r = self.dereference_uri(uri)
@@ -265,6 +286,19 @@ class ConceptFetcher(object):
         return results
 
 
+    def get_debug(self): 
+        return self._debug
+    
+    def set_debug(self, value): 
+        self._debug = value
+        if self._debug:
+            logger.setLevel(logging.DEBUG)
+        else:
+            logger.setLevel(logging.INFO)
+        
+    debug = property(get_debug, set_debug, doc='Boolean debug output flag')
+    
+    
 class CliValuesValidator:
     # the key values that we allow to formulate SKOS queries with
     keys = [
