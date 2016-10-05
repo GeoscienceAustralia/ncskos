@@ -128,11 +128,11 @@ class NCLDDump(object):
                                                    )
         
         try:
-            input_spool.write(subprocess.check_output(ncdump_command))
+            input_spool.write(subprocess.check_output(ncdump_command, shell=True, stderr=subprocess.STDOUT))
         except subprocess.CalledProcessError as e:
-            pass # Error output will be written to stderr
+            logger.error(e.output)
             exit(1)
-        except OSError as e:
+        except OSError as e: # This will happen in Linux if the netCDF command line utilities haven't been installed
             logger.error('ncdump command "%s" failed: %s', ' '.join(ncdump_command), e)
             exit(1)
             
