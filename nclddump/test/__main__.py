@@ -10,7 +10,7 @@ import test_ld_functions
 import test_nclddump
 
 # Run all tests
-print 'Testing ld_functions'
+print 'Testing ld_functions module'
 test_ld_functions.main()
-print 'Testing nclddump'
+print 'Testing nclddump module'
 test_nclddump.main()

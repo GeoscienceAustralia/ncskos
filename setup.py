@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 
 from distutils.core import setup
+import os
 
 version = '0.0.0'
+
+os.name
 
 setup(name='nclddump',
       version=version,
@@ -13,8 +16,9 @@ setup(name='nclddump',
       package_data={
           'nclddump.test': ['sst.ltm.1971-2000_skos.nc']
       },
-      scripts=[
-      ],
+      scripts=(['bin/nclddump.sh'] if (os.name == 'posix') 
+               else (['bin\\nclddump.bat'] if (os.name == 'nt') 
+                     else [])),
       requires=[
           'distutils',
           'lxml',
