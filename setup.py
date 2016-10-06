@@ -16,7 +16,7 @@ setup(name='nclddump',
       package_data={
           'nclddump.test': ['sst.ltm.1971-2000_skos.nc']
       },
-      scripts=(['bin/nclddump.sh'] if (os.name == 'posix') 
+      scripts=(['bin/nclddump'] if (os.name == 'posix') 
                else (['bin\\nclddump.bat'] if (os.name == 'nt') 
                      else [])),
       requires=[
