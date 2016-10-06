@@ -1,5 +1,5 @@
 '''
-Unit tests nclddump on a modified NetCDF file
+Unit tests for nclddump against a modified NetCDF file
 
 Created on 5Oct.,2016
 
@@ -21,18 +21,19 @@ TEST_ARGS = {'CDL': ['-hs', os.path.join(TEST_DIR, TEST_NC_PATH)] + SKOS_OPTION_
              'XML': ['-x', os.path.join(TEST_DIR, TEST_NC_PATH)] + SKOS_OPTION_LIST}
 
 
-nclddump_object = None
+nclddump_object = None # Shared instance so we only invoke the constructor once
 
 class TestNCLDDumpConstructor(unittest.TestCase):
     """Unit tests for NCLDDump class."""
     def test_constructor(self):
         '''
-        Perform test of constructor
+        Perform test of constructor - RUN THIS BEFORE ANY OTHER NCLDDump TESTS
         '''
         print 'Testing NCLDDump constructor'
         global nclddump_object
         nclddump_object = NCLDDump(debug=SHOW_DEBUG_OUTPUT)
         assert nclddump_object, 'NCLDDump constructor failed'
+    
     
 class TestNCLDDumpFunctions(unittest.TestCase):
     """Unit tests for NCLDDump class."""
@@ -44,6 +45,7 @@ class TestNCLDDumpFunctions(unittest.TestCase):
         ncdump_arguments, skos_option_dict = nclddump_object.get_skos_args(TEST_ARGS['CDL'])
         assert ncdump_arguments == TEST_ARGS['CDL'][0:2], 'get_skos_args function failed to correctly extract ncdump arguments'
         assert skos_option_dict == SKOS_OPTION_DICT, 'get_skos_args function failed to correctly extract SKOS options'
+    
     
 class TestNCLDDumpSystem(unittest.TestCase):
     """Unit tests for NCLDDump class."""

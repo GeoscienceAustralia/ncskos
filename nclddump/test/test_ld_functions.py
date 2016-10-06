@@ -1,5 +1,5 @@
 '''
-Unit tests nclddump on a modified NetCDF file
+Unit tests for ld_functions against a test URI
 
 Created on 5Oct.,2016
 
@@ -8,16 +8,6 @@ Created on 5Oct.,2016
 import unittest
 from pprint import pprint
 from nclddump import ld_functions  #ConceptFetcher, CliValuesValidator
-
-#===============================================================================
-# if __name__ == '__main__':
-#     # a live test of all options using the demo vocab
-#     # you will see:
-#     #   a Polish prefLabel (temperatura powierzchni morza)
-#     #   1 altLabel (SST)
-#     #   3 narrower URIs
-#===============================================================================
-    
 
 SHOW_DEBUG_OUTPUT=False
 
@@ -54,7 +44,7 @@ VALID_MIMETYPES = {'text/turtle': 'turtle',
 
 INVALID_MIMETYPE = 'crap'
 
-concept_fetcher_object = None
+concept_fetcher_object = None # Shared instance so we only invoke the constructor once
     
 class TestCliValuesValidator(unittest.TestCase):
     """Unit tests for CliValuesValidator class"""
@@ -178,7 +168,7 @@ class TestConceptFetcherMidLevel(unittest.TestCase):
     
     
 class TestConceptFetcherSystem(unittest.TestCase):
-    """Top-level unit tests for ConceptFetcher class"""
+    """Top-level unit test for ConceptFetcher class"""
     def test_get_results(self):
         print 'Testing get_results function'
         global concept_fetcher_object
