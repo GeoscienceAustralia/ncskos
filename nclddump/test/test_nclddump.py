@@ -21,46 +21,47 @@ TEST_ARGS = {'CDL': ['-hs', os.path.join(TEST_DIR, TEST_NC_PATH)] + SKOS_OPTION_
              'XML': ['-x', os.path.join(TEST_DIR, TEST_NC_PATH)] + SKOS_OPTION_LIST}
 
 
-class TestNCLDDump(unittest.TestCase):
+nclddump_object = None
+
+class TestNCLDDumpConstructor(unittest.TestCase):
     """Unit tests for NCLDDump class."""
-    
-    def __init__(self, *args, **kwargs):
-        '''
-        TestNCLDDump constructor
-        Initialise self.nclddump_object to None
-        '''
-        unittest.TestCase.__init__(self, *args, **kwargs) # Call inherited constructor
-        self.nclddump_object = None
-    
     def test_constructor(self):
         '''
         Perform test of constructor
         '''
         print 'Testing NCLDDump constructor'
-        self.nclddump_object = self.nclddump_object or NCLDDump(debug=SHOW_DEBUG_OUTPUT)
-        assert self.nclddump_object, 'NCLDDump constructor failed'
+        global nclddump_object
+        nclddump_object = NCLDDump(debug=SHOW_DEBUG_OUTPUT)
+        assert nclddump_object, 'NCLDDump constructor failed'
+    
+class TestNCLDDumpFunctions(unittest.TestCase):
+    """Unit tests for NCLDDump class."""
     
     def test_get_skos_args(self):
         print 'Testing get_skos_args function'
-        self.nclddump_object = self.nclddump_object or NCLDDump(debug=SHOW_DEBUG_OUTPUT)
+        global nclddump_object
         
-        ncdump_arguments, skos_option_dict = self.nclddump_object.get_skos_args(TEST_ARGS['CDL'])
+        ncdump_arguments, skos_option_dict = nclddump_object.get_skos_args(TEST_ARGS['CDL'])
         assert ncdump_arguments == TEST_ARGS['CDL'][0:2], 'get_skos_args function failed to correctly extract ncdump arguments'
         assert skos_option_dict == SKOS_OPTION_DICT, 'get_skos_args function failed to correctly extract SKOS options'
     
-    def test_z_process_ncdump(self):
+class TestNCLDDumpSystem(unittest.TestCase):
+    """Unit tests for NCLDDump class."""
+    
+    def test_process_ncdump(self):
         '''
         Perform two format tests using the same NCLDDump object to exercise caching code
         '''
-        self.nclddump_object = self.nclddump_object or NCLDDump(debug=SHOW_DEBUG_OUTPUT)
+        print 'Testing process_ncdump function'
+        global nclddump_object
         
         for test_key in sorted(TEST_ARGS.keys()):
-            print 'Testing %s output' % test_key
-            nclddump_result = self.nclddump_object.process_ncdump(TEST_ARGS[test_key]).read()
+            print '\tTesting %s output' % test_key
+            nclddump_result = nclddump_object.process_ncdump(TEST_ARGS[test_key]).read()
             if SHOW_DEBUG_OUTPUT:
                 print '%s output:\n%s' % (test_key, nclddump_result)
             
-            assert self.nclddump_object.error is None, 'process_ncdump failed for %s: %s' % (test_key, self.nclddump_object.error)
+            assert nclddump_object.error is None, 'process_ncdump failed for %s: %s' % (test_key, nclddump_object.error)
             
             if test_key == 'CDL':
                 assert 'sst:skos_prefLabel_pl = "temperatura powierzchni morza" ;' in nclddump_result, 'SKOS prefLabel query failed'
@@ -82,7 +83,9 @@ http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/square_of_sea_surface_temp
 def test_suite():
     """Returns a test suite of all the tests in this module."""
 
-    test_classes = [TestNCLDDump]
+    test_classes = [TestNCLDDumpConstructor,
+                    TestNCLDDumpFunctions,
+                    TestNCLDDumpSystem]
 
     suite_list = map(unittest.defaultTestLoader.loadTestsFromTestCase,
                      test_classes)
