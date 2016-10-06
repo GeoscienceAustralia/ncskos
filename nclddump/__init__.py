@@ -16,6 +16,7 @@ import os
 import logging
 import subprocess
 import tempfile
+from lxml import etree
 from distutils.util import strtobool
 from ld_functions import ConceptFetcher 
 
@@ -30,11 +31,6 @@ if not logging.root.handlers:
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO) # Initial logging level for this module
 
-try:
-    from lxml import etree
-except ImportError as e:
-    logger.warning('%s: -x option for XML output will fail', e.message)
-    
 class NCLDDump(object):
     """
     Class definition for NCLDDump to implement prototype nclddump command
