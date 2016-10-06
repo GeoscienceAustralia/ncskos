@@ -9,10 +9,11 @@ import unittest
 import os
 from nclddump import NCLDDump
 
-SHOW_DEBUG_OUTPUT=True
+SHOW_DEBUG_OUTPUT=False
 
 TEST_NC_PATH = 'sst.ltm.1971-2000_skos.nc' # Test file in the same directory as this script
 SKOS_OPTION_LIST = ['--skos', 'lang=pl', 'altLabels=True', 'narrower=True', 'broader=True']
+SKOS_OPTION_DICT = {'lang': 'pl', 'altLabels': True, 'narrower': True, 'broader': True}
 
 TEST_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -39,7 +40,15 @@ class TestNCLDDump(unittest.TestCase):
         self.nclddump_object = self.nclddump_object or NCLDDump(debug=SHOW_DEBUG_OUTPUT)
         assert self.nclddump_object, 'NCLDDump constructor failed'
     
-    def test_process_ncdump(self):
+    def test_get_skos_args(self):
+        print 'Testing get_skos_args function'
+        self.nclddump_object = self.nclddump_object or NCLDDump(debug=SHOW_DEBUG_OUTPUT)
+        
+        ncdump_arguments, skos_option_dict = self.nclddump_object.get_skos_args(TEST_ARGS['CDL'])
+        assert ncdump_arguments == TEST_ARGS['CDL'][0:2], 'get_skos_args function failed to correctly extract ncdump arguments'
+        assert skos_option_dict == SKOS_OPTION_DICT, 'get_skos_args function failed to correctly extract SKOS options'
+    
+    def test_z_process_ncdump(self):
         '''
         Perform two format tests using the same NCLDDump object to exercise caching code
         '''

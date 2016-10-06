@@ -33,7 +33,8 @@ class ConceptFetcher(object):
         :param debug: Boolean debug output flag
         """
         self.set_debug(debug) # Turn debug output on or off as required
-        self.g = None
+        self.uri = None
+        self.rdf_graph = None
         
         if not self.valid_command_line_args(skos_params):
             exit()
@@ -42,6 +43,13 @@ class ConceptFetcher(object):
         
         self.local_cache_dict = {}
 
+    def setup_rdf_graph(self, uri):
+        '''Function to set up self.rdf_graph if the URI is new
+        '''
+        if self.uri != uri:
+            self.parse_rdf(self.dereference_uri(uri)) 
+            self.uri = uri
+               
     def valid_command_line_args(self, skos_params):
         """Ensure that we receive valid command line args
         :param skos_params: dict containing SKOS options
@@ -112,11 +120,11 @@ class ConceptFetcher(object):
     def parse_rdf(self, http_response):
         # this parsing will raise an rdflib error if the RDF is broken
         logger.debug('http_response.content = %s', http_response.content)
-        self.g = rdflib.Graph().parse(StringIO(http_response.content),
+        self.rdf_graph = rdflib.Graph().parse(StringIO(http_response.content),
                                       format=self.get_rdflib_rdf_format(http_response.headers.get('Content-Type'))
                                       )
 
-        logger.debug('graph = %s', self.g)
+        logger.debug('graph = %s', self.rdf_graph)
 
     def valid_skos(self, uri):
         """Here we are NOT validating SKOS per se, we are only validating the minimum requirement for a Concept label
@@ -125,6 +133,8 @@ class ConceptFetcher(object):
         :param uri: Potential SKOS URI
         :return: bool
         """
+        self.setup_rdf_graph(uri)
+               
         # is there a skos:Concept declaration for the URI and does it have a skos:prefLabel?
         q = '''
             PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
@@ -136,7 +146,7 @@ class ConceptFetcher(object):
             }
         '''
         logger.debug('valid_skos query = %s', q)
-        qres = self.g.query(q)
+        qres = self.rdf_graph.query(q)
         logger.debug('valid_skos result = %s', list(qres))
         
         return bool(qres)
@@ -148,8 +158,11 @@ class ConceptFetcher(object):
         :return: string prefLabel
         :return: string lang
         """
+        self.setup_rdf_graph(uri)
+            
         pl = None
         if lang is None: lang = 'en'  # in case some absolute drongo sets the lang to None
+        
         q = '''
             PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
             SELECT ?pl
@@ -163,7 +176,7 @@ class ConceptFetcher(object):
         ''' % {'uri': uri, 'lang': lang}
         
         logger.debug('get_prefLabel query = %s', q)
-        qres = self.g.query(q)
+        qres = self.rdf_graph.query(q)
         logger.debug('get_prefLabel result = %s', list(qres))
         
         for row in qres:
@@ -179,6 +192,8 @@ class ConceptFetcher(object):
         :param uri: a valid URI for a SKOS Concept
         :return: string containing altLabels as a comma separated list
         """
+        self.setup_rdf_graph(uri)
+
         als = []
         q = '''
             PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
@@ -190,7 +205,7 @@ class ConceptFetcher(object):
         ''' % {'uri': uri}
         
         logger.debug('get_altLabels query = %s', q)
-        qres = self.g.query(q)
+        qres = self.rdf_graph.query(q)
         logger.debug('get_altLabels result = %s', list(qres))
         
         for row in qres:
@@ -206,6 +221,8 @@ class ConceptFetcher(object):
         :param uri: a valid URI for a SKOS Concept
         :return: string containing narrower concepts as a comma separated list
         """
+        self.setup_rdf_graph(uri)
+            
         narrower = []
         q = '''
             PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
@@ -216,7 +233,7 @@ class ConceptFetcher(object):
         ''' % {'uri': uri}
         
         logger.debug('get_narrower query = %s', q)
-        qres = self.g.query(q)
+        qres = self.rdf_graph.query(q)
         logger.debug('get_narrower result = %s', list(qres))
         
         for row in qres:
@@ -232,6 +249,8 @@ class ConceptFetcher(object):
         :param uri: a valid URI for a SKOS Concept
         :return: string containing broader concepts as a comma separated list
         """
+        self.setup_rdf_graph(uri)
+            
         broader = []
         q = '''
             PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
@@ -242,7 +261,7 @@ class ConceptFetcher(object):
         ''' % {'uri': uri}
         
         logger.debug('get_broader query = %s', q)
-        qres = self.g.query(q)
+        qres = self.rdf_graph.query(q)
         logger.debug('get_broader result = %s', list(qres))
         
         for row in qres:
@@ -258,15 +277,13 @@ class ConceptFetcher(object):
         :param uri: a valid URI for a SKOS Concept
         :return: dict containing all results specified in self.skos_params
         """
-        if not self.valid_skos_concept_uri(uri):
-            exit()
-            
         if uri in self.local_cache_dict.keys():
             logger.debug('URI %s found in cache' % uri)
             return self.local_cache_dict[uri]
 
-        r = self.dereference_uri(uri)
-        self.parse_rdf(r)
+        if not self.valid_skos_concept_uri(uri):
+            exit()
+            
         if not self.valid_skos(uri):
             exit()
 

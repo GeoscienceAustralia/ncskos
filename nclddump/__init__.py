@@ -60,60 +60,60 @@ class NCLDDump(object):
                 print line.replace(os.linesep, '')
 
             
+    def get_skos_args(self, arguments):
+        """
+        Helper function to split SKOS options from ncdump arguments
+        :param arguments: ncdump arguments with optional "--skos <skos_option>=<value> <skos_option>=<value>..." arguments
+    
+        :return: ncdump_arguments: List of ncdump arguments WITHOUT optional "--skos <skos_option>=<value> <skos_option>=<value>..." arguments
+        :return: skos_option_dict: Dict containing <key>:<value> SKOS options
+        """
+        key_value_regex = re.compile('(\w+)=(.*)')
+        ncdump_arguments = []
+        skos_option_dict = {}
+        
+        skos_args = False
+        for arg in arguments:
+            arg = arg.strip() # This should deal with any stray EOL characters
+            if skos_args:
+                if arg[0] == '-':  # New switch
+                    skos_args = False  # Keep processing non-SKOS arg (no "continue")
+                else:
+                    key_value_match = re.search(key_value_regex, arg)
+                    assert key_value_match is not None, 'SKOS options must be expressed as <key>=<value>'
+                    key = key_value_match.group(1).strip()
+                    value = key_value_match.group(2).strip()
+                    logger.debug('key = %s, value = %s', key, value)
+                    
+                    # Perform basic typecasting from string to float or bool
+                    try:
+                        value = float(value)
+                    except ValueError:
+                        try:
+                            value = bool(strtobool(value))
+                        except ValueError:
+                            pass  # No change to string value
+                    
+                    skos_option_dict[key] = value
+                    continue
+                    
+            elif re.match('--skos', arg, re.I) is not None:
+                skos_args = True
+                continue
+            
+            # Any non-SKOS argument is for ncdump
+            ncdump_arguments.append(arg)
+                
+        return ncdump_arguments, skos_option_dict        
+
     def process_ncdump(self, arguments):
         """
         Function to perform skos URI resolution and text substitution on ncdump output
         :param arguments: ncdump arguments with optional "--skos <skos_option>=<value>..." arguments
         :return: file-like object containing modified ncdump output
-        """
-        def get_skos_args(arguments):
-            """
-            Helper function to split SKOS options from ncdump arguments
-            :param arguments: ncdump arguments with optional "--skos <skos_option>=<value> <skos_option>=<value>..." arguments
-        
-            :return: ncdump_arguments: List of ncdump arguments WITHOUT optional "--skos <skos_option>=<value> <skos_option>=<value>..." arguments
-            :return: skos_option_dict: Dict containing <key>:<value> SKOS options
-            """
-            key_value_regex = re.compile('(\w+)=(.*)')
-            ncdump_arguments = []
-            skos_option_dict = {}
-            
-            skos_args = False
-            for arg in arguments:
-                arg = arg.strip() # This should deal with any stray EOL characters
-                if skos_args:
-                    if arg[0] == '-':  # New switch
-                        skos_args = False  # Keep processing non-SKOS arg (no "continue")
-                    else:
-                        key_value_match = re.search(key_value_regex, arg)
-                        assert key_value_match is not None, 'SKOS options must be expressed as <key>=<value>'
-                        key = key_value_match.group(1).strip()
-                        value = key_value_match.group(2).strip()
-                        logger.debug('key = %s, value = %s', key, value)
-                        
-                        # Perform basic typecasting from string to float or bool
-                        try:
-                            value = float(value)
-                        except ValueError:
-                            try:
-                                value = bool(strtobool(value))
-                            except ValueError:
-                                pass  # No change to string value
-                        
-                        skos_option_dict[key] = value
-                        continue
-                        
-                elif re.match('--skos', arg, re.I) is not None:
-                    skos_args = True
-                    continue
-                
-                # Any non-SKOS argument is for ncdump
-                ncdump_arguments.append(arg)
-                    
-            return ncdump_arguments, skos_option_dict        
-               
+        """             
         self._error = None
-        ncdump_arguments, skos_option_dict = get_skos_args(arguments)
+        ncdump_arguments, skos_option_dict = self.get_skos_args(arguments)
         logger.debug('ncdump_arguments = %s', ncdump_arguments)
         logger.debug('skos_option_dict = %s', skos_option_dict)
         
