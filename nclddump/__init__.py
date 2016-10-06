@@ -180,7 +180,7 @@ class NCLDDump(object):
                     logger.debug('new_element = %s', etree.tostring(new_element, pretty_print=False))
                     parent_element.append(new_element)
                     
-                parent_element.remove(skos_element) # Delete original element
+                #parent_element.remove(skos_element) # Delete original element
                 
                 output_spool.write(re.sub('(\r|\n)+', os.linesep, etree.tostring(netcdf_tree, method='xml', 
                                                                                  pretty_print=True, 
@@ -216,7 +216,7 @@ class NCLDDump(object):
                             logger.debug('modified_line = %s', modified_line)
                             output_spool.write(modified_line)
                             
-                        continue  # Process next input line
+                        #continue  # Process next input line
                     except Exception, e:
                         logger.warning('URI resolution failed for %s: %s', uri, e.message)
                         self._error = e.message
