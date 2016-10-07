@@ -29,33 +29,33 @@ if not logging.root.handlers:
     logging.root.addHandler(console_handler)
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO) # Initial logging level for this module
+logger.setLevel(logging.INFO)  # Initial logging level for this module
+
 
 class NcSKOSDump(object):
     """
     Class definition for NcSKOSDump to implement prototype ncskosdump command
     Wraps ncdump to perform SKOS vocabulary lookups and substitute these into the CDL output
     """
-    SKOS_ATTRIBUTE = 'skos_concept_uri' # Attribute name for SKOS URIs
-    MAX_MEM = 1000000000 # Limit before switching from stringIO to file (1GB?)
+    SKOS_ATTRIBUTE = 'skos_concept_uri'  # Attribute name for SKOS URIs
+    MAX_MEM = 1000000000  # Limit before switching from stringIO to file (1GB?)
     
     def __init__(self, arguments=None, debug=False):
-        '''
+        """
         NcSKOSDump constructor
         :param arguments: optional list of ncdump arguments with additional optional "--skos <skos_option>=<value>..." arguments
         :param debug: Boolean debug output flag
-        '''
+        """
         self._error = None
         self.concept_fetcher = None
         
-        self.set_debug(debug) # Turn debug output on or off as required
+        self.set_debug(debug)  # Turn debug output on or off as required
         
         # Process and print results to standard output if arguments have been provided
         if arguments is not None:
             for line in self.process_ncdump(arguments):
                 print line.replace(os.linesep, '')
 
-            
     def get_skos_args(self, arguments):
         """
         Helper function to split SKOS options from ncdump arguments
@@ -70,13 +70,13 @@ class NcSKOSDump(object):
         
         skos_args = False
         for arg in arguments:
-            arg = arg.strip() # This should deal with any stray EOL characters
+            arg = arg.strip()  # This should deal with any stray EOL characters
             if skos_args:
                 if arg[0] == '-':  # New switch
                     skos_args = False  # Keep processing non-SKOS arg (no "continue")
                 else:
                     key_value_match = re.search(key_value_regex, arg)
-                    if key_value_match is not None: # SKOS options must be expressed as <key>=<value>
+                    if key_value_match is not None:  # SKOS options must be expressed as <key>=<value>
                         key = key_value_match.group(1).strip()
                         value = key_value_match.group(2).strip()
                         logger.debug('key = %s, value = %s', key, value)
@@ -92,7 +92,7 @@ class NcSKOSDump(object):
                         
                         skos_option_dict[key] = value
                         continue
-                    else: # arg must be filename - add to ncdump_arguments
+                    else:  # arg must be filename - add to ncdump_arguments
                         skos_args = False
                     
             elif re.match('--skos', arg, re.I) is not None:
@@ -123,30 +123,32 @@ class NcSKOSDump(object):
         ncdump_command = ' '.join(['ncdump'] + ncdump_arguments)
         logger.debug('ncdump_command = "%s"', ncdump_command)
         
-        input_spool = tempfile.SpooledTemporaryFile(max_size=NcSKOSDump.MAX_MEM, 
-                                                   mode='w+', 
-                                                   bufsize=-1,
-                                                   #suffix="", 
-                                                   #prefix=template, 
-                                                   #dir=None
-                                                   )
+        input_spool = tempfile.SpooledTemporaryFile(
+            max_size=NcSKOSDump.MAX_MEM,
+            mode='w+',
+            bufsize=-1,
+            # suffix="",
+            # prefix=template,
+            # dir=None
+        )
         
         # TODO: Work out whether we actually need to do this.
         # This might be overkill if we are only writing to stdout - we could just print
-        output_spool = tempfile.SpooledTemporaryFile(max_size=NcSKOSDump.MAX_MEM, 
-                                                   mode='w+', 
-                                                   bufsize=-1,
-                                                   #suffix="", 
-                                                   #prefix=template, 
-                                                   #dir=None
-                                                   )
+        output_spool = tempfile.SpooledTemporaryFile(
+            max_size=NcSKOSDump.MAX_MEM,
+            mode='w+',
+            bufsize=-1,
+            # suffix="",
+            # prefix=template,
+            # dir=None
+        )
         
         try:
             input_spool.write(subprocess.check_output(ncdump_command, shell=True, stderr=subprocess.STDOUT))
         except subprocess.CalledProcessError as e:
             logger.error(e.output)
             self._error = e.output
-            exit(1) # Don't proceed without ncdump output
+            exit(1)  # Don't proceed without ncdump output
             
         input_spool.seek(0)
         
@@ -156,8 +158,10 @@ class NcSKOSDump(object):
             
             namespace = '{' + netcdf_tree.nsmap[None] + '}'
             
-            for skos_element in [attribute_element for attribute_element in netcdf_tree.iterfind(path='.//' + namespace + 'attribute') 
-                                 if attribute_element.attrib.get('name') == NcSKOSDump.SKOS_ATTRIBUTE]:
+            for skos_element \
+                    in [attribute_element for attribute_element
+                        in netcdf_tree.iterfind(path='.//' + namespace + 'attribute')
+                        if attribute_element.attrib.get('name') == NcSKOSDump.SKOS_ATTRIBUTE]:
                 
                 logger.debug('skos_element = %s', etree.tostring(skos_element, pretty_print=False))
                 uri = skos_element.attrib['value']
@@ -178,7 +182,7 @@ class NcSKOSDump(object):
                     logger.debug('new_element = %s', etree.tostring(new_element, pretty_print=False))
                     parent_element.append(new_element)
                     
-                #parent_element.remove(skos_element) # Delete original element
+                # parent_element.remove(skos_element) # Delete original element
                 
                 output_spool.write(re.sub('(\r|\n)+', os.linesep, etree.tostring(netcdf_tree, method='xml', 
                                                                                  pretty_print=True, 
@@ -216,7 +220,7 @@ class NcSKOSDump(object):
                             logger.debug('modified_line = %s', modified_line)
                             output_spool.write(modified_line)
                             
-                        #continue  # Process next input line
+                        # continue  # Process next input line
                     except Exception, e:
                         logger.warning('URI resolution failed for %s: %s', uri, e.message)
                         self._error = e.message
