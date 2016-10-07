@@ -10,7 +10,7 @@ import test_ld_functions
 import test_ncskosdump
 
 # Run all tests
-print 'Testing ld_functions module'
+print '* Testing ld_functions module:'
 test_ld_functions.main()
-print 'Testing ncskosdump module'
+print '* Testing ncskosdump module:'
 test_ncskosdump.main()

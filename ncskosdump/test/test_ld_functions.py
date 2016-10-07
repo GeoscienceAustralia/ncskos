@@ -50,9 +50,9 @@ class TestCliValuesValidator(unittest.TestCase):
     """Unit tests for CliValuesValidator class"""
     def test_is_a_uri(self):
         '''
-        Perform test of CliValuesValidator.is_a_uri()
+        Perform test of CliValuesValidator.is_a_uri
         '''
-        print 'Testing CliValuesValidator.is_a_uri() function'
+        print 'Testing CliValuesValidator.is_a_uri function'
         assert ld_functions.CliValuesValidator.is_a_uri(TEST_URI), 'CliValuesValidator.is_a_uri() function failed'
         assert not ld_functions.CliValuesValidator.is_a_uri(INVALID_URI), 'Negative CliValuesValidator.is_a_uri() function failed'
         

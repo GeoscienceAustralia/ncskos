@@ -1,5 +1,8 @@
 '''
+Class definition for ConceptFetcher to to perform SKOS vocabulary lookups
+
 Created on 30 Sep 2016
+
 @author: Nicholas Car
 '''
 import re
@@ -18,6 +21,9 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)  # Initial logging level for this module
 
 class ConceptFetcher(object):
+    '''
+    Class definition for ConceptFetcher to to perform SKOS vocabulary lookups
+    '''
     # Dict of supported mimetypes
     VALID_MIMETYPES = {'text/turtle': 'turtle',
                        'text/ntriples': 'nt',
