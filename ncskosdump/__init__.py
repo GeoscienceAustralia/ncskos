@@ -1,9 +1,12 @@
 """
 Class definition for NcSKOSDump to implement prototype ncskosdump command
-Wraps ncdump to perform SKOS vocabulary lookups and substitute these into the CDL or XML output
+Wraps ncdump to perform SKOS vocabulary lookups and substitute these into the
+CDL or XML output
 
-Note: This utility requires that the netCDF command line utilities be installed. 
-These utilities are available from: http://www.unidata.ucar.edu/software/netcdf/docs/getting_and_building_netcdf.html
+Note: This utility requires that the netCDF command line utilities be
+installed.
+These utilities are available from:
+http://www.unidata.ucar.edu/software/netcdf/docs/getting_and_building_netcdf.html
 
 Created on 30 Sep 2016
 
@@ -35,7 +38,8 @@ logger.setLevel(logging.INFO)  # Initial logging level for this module
 class NcSKOSDump(object):
     """
     Class definition for NcSKOSDump to implement prototype ncskosdump command
-    Wraps ncdump to perform SKOS vocabulary lookups and substitute these into the CDL output
+    Wraps ncdump to perform SKOS vocabulary lookups and substitute these into
+    the CDL output
     """
     SKOS_ATTRIBUTE = 'skos_concept_uri'  # Attribute name for SKOS URIs
     MAX_MEM = 1000000000  # Limit before switching from stringIO to file (1GB?)
@@ -43,7 +47,8 @@ class NcSKOSDump(object):
     def __init__(self, arguments=None, debug=False):
         """
         NcSKOSDump constructor
-        :param arguments: optional list of ncdump args with additional optional "--skos <skos_option>=<value>..." args
+        :param arguments: optional list of ncdump args with additional
+        optional "--skos <skos_option>=<value>..." args
         :param debug: Boolean debug output flag
         """
         self._error = None
@@ -60,9 +65,11 @@ class NcSKOSDump(object):
     def get_skos_args(self, arguments):
         """
         Helper function to split SKOS options from ncdump arguments
-        :param arguments: ncdump args with optional "--skos <skos_option>=<value> <skos_option>=<value>..." args
+        :param arguments: ncdump args with optional
+            "--skos <skos_option>=<value> <skos_option>=<value>..." args
 
-        :return: ncdump_arguments: List of ncdump args WITHOUT optional "--skos <skos_option>=<value> <skos_option>=<value>..." args
+        :return: ncdump_arguments: List of ncdump args WITHOUT optional
+            "--skos <skos_option>=<value> <skos_option>=<value>..." args
         :return: skos_option_dict: Dict containing <key>:<value> SKOS options
         """
         key_value_regex = re.compile('(\w+)=(.*)')
@@ -78,7 +85,8 @@ class NcSKOSDump(object):
                     skos_args = False
                 else:
                     key_value_match = re.search(key_value_regex, arg)
-                    if key_value_match is not None:  # SKOS options must be expressed as "<key>=<value>"
+                    # SKOS options must be expressed as "<key>=<value>"
+                    if key_value_match is not None:
                         key = key_value_match.group(1).strip()
                         value = key_value_match.group(2).strip()
                         logger.debug('key = %s, value = %s', key, value)
@@ -109,8 +117,10 @@ class NcSKOSDump(object):
 
     def process_ncdump(self, arguments):
         """
-        Function to perform skos URI resolution and text substitution on ncdump output
-        :param arguments: ncdump arguments with optional "--skos <skos_option>=<value>..." arguments
+        Function to perform skos URI resolution and text substitution on ncdump
+        output
+        :param arguments: ncdump arguments with optional
+            "--skos <skos_option>=<value>..." arguments
         :return: file-like object containing modified ncdump output
         """
         self._error = None
@@ -119,9 +129,11 @@ class NcSKOSDump(object):
         logger.debug('skos_option_dict = %s', skos_option_dict)
 
         xml_output = (
-            len([arg for arg in ncdump_arguments if re.match('\-\w*x\w*', arg)]) > 0)
+            len([arg for arg in ncdump_arguments
+                 if re.match('\-\w*x\w*', arg)]) > 0)
 
-        if not self.concept_fetcher or self.concept_fetcher.skos_params != skos_option_dict:
+        if (not self.concept_fetcher or
+                self.concept_fetcher.skos_params != skos_option_dict):
             self.concept_fetcher = ConceptFetcher(skos_option_dict, self.debug)
 
         ncdump_command = ' '.join(['ncdump'] + ncdump_arguments)
@@ -166,8 +178,11 @@ class NcSKOSDump(object):
 
             for skos_element \
                     in [attribute_element for attribute_element
-                        in netcdf_tree.iterfind(path='.//' + namespace + 'attribute')
-                        if attribute_element.attrib.get('name') == NcSKOSDump.SKOS_ATTRIBUTE]:
+                        in netcdf_tree.iterfind(path='.//' + namespace +
+                                                'attribute')
+                        if (attribute_element.attrib.get('name') ==
+                            NcSKOSDump.SKOS_ATTRIBUTE)
+                        ]:
 
                 logger.debug('skos_element = %s', etree.tostring(
                     skos_element, pretty_print=False))
@@ -193,18 +208,21 @@ class NcSKOSDump(object):
 
                 # parent_element.remove(skos_element) # Delete original element
 
-                output_spool.write(re.sub('(\r|\n)+', os.linesep, etree.tostring(netcdf_tree, method='xml',
-                                                                                 pretty_print=True,
-                                                                                 xml_declaration=True,
-                                                                                 encoding="UTF-8")))
+                output_spool.write(re.sub('(\r|\n)+', os.linesep,
+                                          etree.tostring(netcdf_tree,
+                                                         method='xml',
+                                                         pretty_print=True,
+                                                         xml_declaration=True,
+                                                         encoding="UTF-8")))
 
         else:  # CDL output
-            # TODO: Investigate potential issues around global attributes - untested.
+            # TODO: Investigate potential issues around global attributes
             # Example: '    time:concept_uri =
             # "http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/time"
             # ;'
-            attribute_regex_string = '^\s*(\w*):' + NcSKOSDump.SKOS_ATTRIBUTE + \
-                '\s*=\s*"(http(s*)://.*)"\s*;\s*$'
+            attribute_regex_string = ('^\s*(\w*):' +
+                                      NcSKOSDump.SKOS_ATTRIBUTE +
+                                      '\s*=\s*"(http(s*)://.*)"\s*;\s*$')
             logger.debug('attribute_regex_string = %s', attribute_regex_string)
             attribute_regex = re.compile(attribute_regex_string)
 
@@ -229,14 +247,16 @@ class NcSKOSDump(object):
 
                         # Write each key:value pair as a separate line
                         for key, value in skos_lookup_dict.items():
-                            modified_line = input_line.replace(variable_name + ':' + NcSKOSDump.SKOS_ATTRIBUTE,
+                            modified_line = input_line.replace(variable_name +
+                                                               ':' +
+                                                               NcSKOSDump.SKOS_ATTRIBUTE,
                                                                variable_name + ':' + key
                                                                ).replace(uri, value)
                             logger.debug('modified_line = %s', modified_line)
                             output_spool.write(modified_line)
 
                         # continue  # Process next input line
-                    except Exception, e:
+                    except Exception as e:
                         logger.warning(
                             'URI resolution failed for %s: %s', uri, e.message)
                         self._error = e.message

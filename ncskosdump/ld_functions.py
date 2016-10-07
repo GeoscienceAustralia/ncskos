@@ -70,22 +70,26 @@ class ConceptFetcher(object):
                     'The command line argument {0!s} is not valid.', k)
 
         # ensure language param, if present, is legal
-        if skos_params.get('lang') and skos_params.get('lang') not in CliValuesValidator.language_codes:
+        if skos_params.get('lang') and skos_params.get(
+                'lang') not in CliValuesValidator.language_codes:
             raise Exception(
                 'The requested language code is not a valid 2-letter ISO 639-1:200 code.')
 
         # if altLabels param is present, must be a boolean
-        if skos_params.get('altLabels') and type(skos_params.get('altLabels')) != bool:
+        if skos_params.get('altLabels') and not isinstance(
+                skos_params.get('altLabels'), bool):
             raise Exception(
                 'An altLabels argument, if present, must be either "true" or "false"')
 
         # if broader param is present, must be a boolean
-        if skos_params.get('broader') and type(skos_params.get('broader')) != bool:
+        if skos_params.get('broader') and not isinstance(
+                skos_params.get('broader'), bool):
             raise Exception(
                 'A broader argument, if present, must be either "true" or "false"')
 
         # if narrower param is present, must be a boolean
-        if skos_params.get('narrower') and type(skos_params.get('narrower')) != bool:
+        if skos_params.get('narrower') and not isinstance(
+                skos_params.get('narrower'), bool):
             raise Exception(
                 'A narrower argument, if present, must be either "true" or "false"')
 
