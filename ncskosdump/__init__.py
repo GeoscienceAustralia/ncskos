@@ -1,5 +1,5 @@
 """
-Class definition for NCLDDump to implement prototype nclddump command
+Class definition for NcSKOSDump to implement prototype ncskosdump command
 Wraps ncdump to perform SKOS vocabulary lookups and substitute these into the CDL or XML output
 
 Note: This utility requires that the netCDF command line utilities be installed. 
@@ -31,9 +31,9 @@ if not logging.root.handlers:
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO) # Initial logging level for this module
 
-class NCLDDump(object):
+class NcSKOSDump(object):
     """
-    Class definition for NCLDDump to implement prototype nclddump command
+    Class definition for NcSKOSDump to implement prototype ncskosdump command
     Wraps ncdump to perform SKOS vocabulary lookups and substitute these into the CDL output
     """
     SKOS_ATTRIBUTE = 'skos_concept_uri' # Attribute name for SKOS URIs
@@ -41,7 +41,7 @@ class NCLDDump(object):
     
     def __init__(self, arguments=None, debug=False):
         '''
-        NCLDDump constructor
+        NcSKOSDump constructor
         :param arguments: optional list of ncdump arguments with additional optional "--skos <skos_option>=<value>..." arguments
         :param debug: Boolean debug output flag
         '''
@@ -123,7 +123,7 @@ class NCLDDump(object):
         ncdump_command = ' '.join(['ncdump'] + ncdump_arguments)
         logger.debug('ncdump_command = "%s"', ncdump_command)
         
-        input_spool = tempfile.SpooledTemporaryFile(max_size=NCLDDump.MAX_MEM, 
+        input_spool = tempfile.SpooledTemporaryFile(max_size=NcSKOSDump.MAX_MEM, 
                                                    mode='w+', 
                                                    bufsize=-1,
                                                    #suffix="", 
@@ -133,7 +133,7 @@ class NCLDDump(object):
         
         # TODO: Work out whether we actually need to do this.
         # This might be overkill if we are only writing to stdout - we could just print
-        output_spool = tempfile.SpooledTemporaryFile(max_size=NCLDDump.MAX_MEM, 
+        output_spool = tempfile.SpooledTemporaryFile(max_size=NcSKOSDump.MAX_MEM, 
                                                    mode='w+', 
                                                    bufsize=-1,
                                                    #suffix="", 
@@ -157,7 +157,7 @@ class NCLDDump(object):
             namespace = '{' + netcdf_tree.nsmap[None] + '}'
             
             for skos_element in [attribute_element for attribute_element in netcdf_tree.iterfind(path='.//' + namespace + 'attribute') 
-                                 if attribute_element.attrib.get('name') == NCLDDump.SKOS_ATTRIBUTE]:
+                                 if attribute_element.attrib.get('name') == NcSKOSDump.SKOS_ATTRIBUTE]:
                 
                 logger.debug('skos_element = %s', etree.tostring(skos_element, pretty_print=False))
                 uri = skos_element.attrib['value']
@@ -188,7 +188,7 @@ class NCLDDump(object):
         else:  # CDL output
             # TODO: Investigate potential issues around global attributes - untested.
             # Example: '    time:concept_uri = "http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/time" ;'
-            attribute_regex_string = '^\s*(\w*):' + NCLDDump.SKOS_ATTRIBUTE + '\s*=\s*"(http(s*)://.*)"\s*;\s*$' 
+            attribute_regex_string = '^\s*(\w*):' + NcSKOSDump.SKOS_ATTRIBUTE + '\s*=\s*"(http(s*)://.*)"\s*;\s*$' 
             logger.debug('attribute_regex_string = %s', attribute_regex_string)
             attribute_regex = re.compile(attribute_regex_string)
             
@@ -208,7 +208,7 @@ class NCLDDump(object):
                         
                         # Write each key:value pair as a separate line
                         for key, value in skos_lookup_dict.items():
-                            modified_line = input_line.replace(variable_name + ':' + NCLDDump.SKOS_ATTRIBUTE,
+                            modified_line = input_line.replace(variable_name + ':' + NcSKOSDump.SKOS_ATTRIBUTE,
                                                                variable_name + ':' + key
                                                                ).replace(uri, value)
                             logger.debug('modified_line = %s', modified_line)

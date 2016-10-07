@@ -1,11 +1,11 @@
-# nclddump
+# ncskosdump
 A simple command line tool that wraps and extends the well-known netCDF tool [ncdump](https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/netcdf/ncdump.html), providing functionality to perform Linked Data tasks such as the dereferencing of URIs to collect vocabulary term labels. 
 
 Note: This utility requires that the netCDF command line utilities be installed. These utilities are available from: http://www.unidata.ucar.edu/software/netcdf/docs/getting_and_building_netcdf.html
 
-Once installed, the nclddump utility can be invoked as follows. Note that ncdump options are passed through to ncdump, while SKOS options are passed as <key>=<value> arguments after a "--skos" flag. The attribute name for SKOS concept lookups in the NetCDF file is 'skos_concept_uri'.
+Once installed, the ncskosdump utility can be invoked as follows. Note that ncdump options are passed through to ncdump, while SKOS options are passed as <key>=<value> arguments after a "--skos" flag. The attribute name for SKOS concept lookups in the NetCDF file is 'skos_concept_uri'.
 
-	nclddump <ncdump_options> <netCDF_filename> --skos <SKOS_options>
+	ncskosdump <ncdump_options> <netCDF_filename> --skos <SKOS_options>
 
 SKOS options implemented so far are as follows:
 
@@ -18,7 +18,7 @@ Note that if no SKOS options are provided, then the prefLabel only will be retri
 
 For example:
 
-	nclddump -hs ~/workspace/nclddump/nclddump/test/sst.ltm.1971-2000_skos.nc --skos lang=pl altLabels=True narrower=True broader=True
+	ncskosdump -hs ~/workspace/ncskosdump/ncskosdump/test/sst.ltm.1971-2000_skos.nc --skos lang=pl altLabels=True narrower=True broader=True
 
 will replace the following CDL:
 
@@ -34,7 +34,7 @@ with:
 	
 XML output (via the -x ncdump option) is also supported. For example:
 
-	nclddump -x ~/workspace/nclddump/nclddump/test/sst.ltm.1971-2000_skos.nc --skos lang=pl altLabels=True narrower=True broader=True
+	ncskosdump -x ~/workspace/ncskosdump/ncskosdump/test/sst.ltm.1971-2000_skos.nc --skos lang=pl altLabels=True narrower=True broader=True
 
 will replace the following CDL:
 

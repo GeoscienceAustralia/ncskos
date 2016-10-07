@@ -1,5 +1,5 @@
 '''
-Unit tests for nclddump against a modified NetCDF file
+Unit tests for ncskosdump against a modified NetCDF file
 
 Created on 5Oct.,2016
 
@@ -7,7 +7,7 @@ Created on 5Oct.,2016
 '''
 import unittest
 import os
-from nclddump import NCLDDump
+from ncskosdump import NcSKOSDump
 
 SHOW_DEBUG_OUTPUT=False
 
@@ -30,19 +30,19 @@ TEST_ARG_PERMUTATIONS = [SKOS_OPTION_LIST + ['-hs', os.path.join(TEST_DIR, TEST_
 nclddump_object = None # Shared instance so we only invoke the constructor once
 
 class TestNCLDDumpConstructor(unittest.TestCase):
-    """Unit tests for NCLDDump class."""
+    """Unit tests for NcSKOSDump class."""
     def test_constructor(self):
         '''
-        Perform test of constructor - RUN THIS BEFORE ANY OTHER NCLDDump TESTS
+        Perform test of constructor - RUN THIS BEFORE ANY OTHER NcSKOSDump TESTS
         '''
-        print 'Testing NCLDDump constructor'
+        print 'Testing NcSKOSDump constructor'
         global nclddump_object
-        nclddump_object = NCLDDump(debug=SHOW_DEBUG_OUTPUT)
-        assert nclddump_object, 'NCLDDump constructor failed'
+        nclddump_object = NcSKOSDump(debug=SHOW_DEBUG_OUTPUT)
+        assert nclddump_object, 'NcSKOSDump constructor failed'
     
     
 class TestNCLDDumpFunctions(unittest.TestCase):
-    """Unit tests for NCLDDump class."""
+    """Unit tests for NcSKOSDump class."""
     
     def test_get_skos_args(self):
         print 'Testing get_skos_args function'
@@ -61,11 +61,11 @@ class TestNCLDDumpFunctions(unittest.TestCase):
     
     
 class TestNCLDDumpSystem(unittest.TestCase):
-    """Unit tests for NCLDDump class."""
+    """Unit tests for NcSKOSDump class."""
     
     def test_process_ncdump(self):
         '''
-        Perform two format tests using the same NCLDDump object to exercise caching code
+        Perform two format tests using the same NcSKOSDump object to exercise caching code
         '''
         print 'Testing process_ncdump function'
         global nclddump_object

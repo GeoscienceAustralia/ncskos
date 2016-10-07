@@ -7,7 +7,7 @@ Created on 5Oct.,2016
 '''
 import unittest
 from pprint import pprint
-from nclddump import ld_functions  #ConceptFetcher, CliValuesValidator
+from ncskosdump import ld_functions  #ConceptFetcher, CliValuesValidator
 
 SHOW_DEBUG_OUTPUT=False
 

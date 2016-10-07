@@ -1,6 +1,6 @@
 '''
 Constructor for test module
-Unit tests for nclddump and ld_functions against a modified NetCDF file
+Unit tests for ncskosdump and ld_functions against a modified NetCDF file
 
 Created on 7Oct.,2016
 
