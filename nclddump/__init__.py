@@ -76,22 +76,24 @@ class NCLDDump(object):
                     skos_args = False  # Keep processing non-SKOS arg (no "continue")
                 else:
                     key_value_match = re.search(key_value_regex, arg)
-                    assert key_value_match is not None, 'SKOS options must be expressed as <key>=<value>'
-                    key = key_value_match.group(1).strip()
-                    value = key_value_match.group(2).strip()
-                    logger.debug('key = %s, value = %s', key, value)
-                    
-                    # Perform basic typecasting from string to float or bool
-                    try:
-                        value = float(value)
-                    except ValueError:
+                    if key_value_match is not None: # SKOS options must be expressed as <key>=<value>
+                        key = key_value_match.group(1).strip()
+                        value = key_value_match.group(2).strip()
+                        logger.debug('key = %s, value = %s', key, value)
+                        
+                        # Perform basic typecasting from string to float or bool
                         try:
-                            value = bool(strtobool(value))
+                            value = float(value)
                         except ValueError:
-                            pass  # No change to string value
-                    
-                    skos_option_dict[key] = value
-                    continue
+                            try:
+                                value = bool(strtobool(value))
+                            except ValueError:
+                                pass  # No change to string value
+                        
+                        skos_option_dict[key] = value
+                        continue
+                    else: # arg must be filename - add to ncdump_arguments
+                        skos_args = False
                     
             elif re.match('--skos', arg, re.I) is not None:
                 skos_args = True

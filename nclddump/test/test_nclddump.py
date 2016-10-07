@@ -20,6 +20,12 @@ TEST_DIR = os.path.abspath(os.path.dirname(__file__))
 TEST_ARGS = {'CDL': ['-hs', os.path.join(TEST_DIR, TEST_NC_PATH)] + SKOS_OPTION_LIST,
              'XML': ['-x', os.path.join(TEST_DIR, TEST_NC_PATH)] + SKOS_OPTION_LIST}
 
+# Test different permutations of arguments
+TEST_ARG_PERMUTATIONS = [SKOS_OPTION_LIST + ['-hs', os.path.join(TEST_DIR, TEST_NC_PATH)],
+                       SKOS_OPTION_LIST + [os.path.join(TEST_DIR, TEST_NC_PATH), '-hs'],
+                       ['-hs'] + SKOS_OPTION_LIST + [os.path.join(TEST_DIR, TEST_NC_PATH)],
+                       [os.path.join(TEST_DIR, TEST_NC_PATH)] + SKOS_OPTION_LIST + ['-hs'],
+                       ]
 
 nclddump_object = None # Shared instance so we only invoke the constructor once
 
@@ -42,9 +48,16 @@ class TestNCLDDumpFunctions(unittest.TestCase):
         print 'Testing get_skos_args function'
         global nclddump_object
         
+        # Test straightforward arguments
         ncdump_arguments, skos_option_dict = nclddump_object.get_skos_args(TEST_ARGS['CDL'])
         assert ncdump_arguments == TEST_ARGS['CDL'][0:2], 'get_skos_args function failed to correctly extract ncdump arguments'
         assert skos_option_dict == SKOS_OPTION_DICT, 'get_skos_args function failed to correctly extract SKOS options'
+    
+        # Test different permutations of arguments
+        for args in TEST_ARG_PERMUTATIONS:
+            ncdump_arguments, skos_option_dict = nclddump_object.get_skos_args(args)
+            assert set(ncdump_arguments) == set(args) - set(SKOS_OPTION_LIST), 'get_skos_args function failed to correctly extract reordered ncdump arguments "%s"' % ' '.join(args)
+            assert skos_option_dict == SKOS_OPTION_DICT, 'get_skos_args function failed to correctly extract reordered SKOS options from "%s"' % ' '.join(args)
     
     
 class TestNCLDDumpSystem(unittest.TestCase):
