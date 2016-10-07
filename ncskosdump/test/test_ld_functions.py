@@ -227,7 +227,7 @@ def test_suite():
 
 # Define main function
 def main():
-    unittest.TextTestRunner(verbosity=2).run(test_suite())
+    unittest.TextTestRunner(verbosity=4).run(test_suite())
     
 if __name__ == '__main__':
     main()

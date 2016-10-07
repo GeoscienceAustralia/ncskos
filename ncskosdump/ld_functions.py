@@ -32,7 +32,7 @@ class ConceptFetcher(object):
         'application/rdf+xml': 'rdf',
         'application/rdf+json': 'json-ld'
     }
-    
+
     def __init__(self, skos_params, debug=False):
         """ConceptFetcher constructor
         :param skos_params: dict containing SKOS options
@@ -101,7 +101,10 @@ class ConceptFetcher(object):
         # get the RDF for this concept by dereferencing the URI
         # TODO: enable redirect following based on the status code (i.e. perhaps 303 & 302 but not 301 or whatever)
         s = requests.Session()
-        s.headers['Accept'] = 'text/turtle,application/rdf+xml'
+        accepted_mime_types = ''
+        for mimetype in self.VALID_MIMETYPES.iterkeys():
+            accepted_mime_types += mimetype + ', '
+        s.headers['Accept'] = accepted_mime_types
         s.max_redirects = 3  # TODO: review this magic number
         r = s.get(uri)
         # fail if not 20x status code
@@ -111,17 +114,11 @@ class ConceptFetcher(object):
         return r
 
     def get_rdflib_rdf_format(self, mimetype):
-        # we must have a response with one of the RDF datatype headers
-        # TODO: review all the mimetypes handled by rdflib
-        logger.debug('mimetype = %s', mimetype)
-        
-        rdf_format = ConceptFetcher.VALID_MIMETYPES.get(mimetype.split(';')[0])  # Only look at string before semicolon
-
-        if rdf_format is None:
+        logger.debug('RDF Format = %s', mimetype)
+        if mimetype.split(';')[0] not in self.VALID_MIMETYPES:
             raise Exception('%s does not represent a valid rdflib RDF format' % mimetype)
-        
-        logger.debug('RDF Format = %s', rdf_format)
-        return rdf_format
+        else:
+            return self.VALID_MIMETYPES[mimetype.split(';')[0]]
 
     def parse_rdf(self, http_response):
         # this parsing will raise an rdflib error if the RDF is broken
