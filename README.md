@@ -20,7 +20,7 @@ For example:
 
 	ncskosdump -hs ~/workspace/ncskosdump/ncskosdump/test/sst.ltm.1971-2000_skos.nc --skos lang=pl altLabels=True narrower=True broader=True
 
-will replace the following CDL:
+will replace the following CDL line:
 
 	sst:skos_concept_uri = "http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_temperature" ;
 
@@ -36,7 +36,7 @@ XML output (via the -x ncdump option) is also supported. For example:
 
 	ncskosdump -x ~/workspace/ncskosdump/ncskosdump/test/sst.ltm.1971-2000_skos.nc --skos lang=pl altLabels=True narrower=True broader=True
 
-will replace the following CDL:
+will replace the following XML element:
 
 	<attribute name="skos_concept_uri" value="http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_temperature" />
 
