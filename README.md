@@ -26,11 +26,11 @@ will replace the following CDL:
 
 with:
 
+	sst:skos_concept_uri = "http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_temperature" ;
 	sst:skos_broader = "" ;
 	sst:skos_narrower = "http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_skin_temperature, http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_subskin_temperature, http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/square_of_sea_surface_temperature" ;
 	sst:skos_prefLabel_pl = "temperatura powierzchni morza" ;
 	sst:skos_altLabels = "SST" ;
-	sst:skos_concept_uri = "http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_temperature" ;
 	
 XML output (via the -x ncdump option) is also supported. For example:
 

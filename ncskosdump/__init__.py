@@ -194,6 +194,8 @@ class NcSKOSDump(object):
             
             for input_line in input_spool.readlines():
                 logger.debug('input_line = %s', input_line)
+                                
+                output_spool.write(input_line)  # Output original line
                 
                 attribute_match = re.match(attribute_regex, input_line)
                 if attribute_match is not None:
@@ -219,8 +221,6 @@ class NcSKOSDump(object):
                         logger.warning('URI resolution failed for %s: %s', uri, e.message)
                         self._error = e.message
                         # Fall back to original input line
-                                
-                output_spool.write(input_line)  # Output original line
          
             input_spool.close()
             
