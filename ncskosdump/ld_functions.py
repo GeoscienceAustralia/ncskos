@@ -1,44 +1,44 @@
-'''
+"""
 Class definition for ConceptFetcher to to perform SKOS vocabulary lookups
 
 Created on 30 Sep 2016
 
 @author: Nicholas Car
-'''
+"""
 import re
 from StringIO import StringIO
+import requests
+import rdflib
 import logging
 
 # Turn off logging for anything we didn't write - it's just plain annoying
 # N.B: This needs to be before the import for requests and rdflib despite whatever pep8 might whinge about
 logging.getLogger('requests').setLevel(logging.WARNING)
 logging.getLogger('rdflib').setLevel(logging.WARNING)
-
-import requests
-import rdflib
-
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)  # Initial logging level for this module
 
+
 class ConceptFetcher(object):
-    '''
+    """
     Class definition for ConceptFetcher to to perform SKOS vocabulary lookups
-    '''
+    """
     # Dict of supported mimetypes
-    VALID_MIMETYPES = {'text/turtle': 'turtle',
-                       'text/ntriples': 'nt',
-                       'text/nt': 'nt',
-                       'text/n3': 'nt',
-                       'application/rdf+xml': 'rdf',
-                       'application/rdf+json': 'json-ld'
-                       }
+    VALID_MIMETYPES = {
+        'text/turtle': 'turtle',
+        'text/ntriples': 'nt',
+        'text/nt': 'nt',
+        'text/n3': 'nt',
+        'application/rdf+xml': 'rdf',
+        'application/rdf+json': 'json-ld'
+    }
     
     def __init__(self, skos_params, debug=False):
         """ConceptFetcher constructor
         :param skos_params: dict containing SKOS options
         :param debug: Boolean debug output flag
         """
-        self.set_debug(debug) # Turn debug output on or off as required
+        self.set_debug(debug)  # Turn debug output on or off as required
         self.uri = None
         self.rdf_graph = None
         
@@ -50,8 +50,8 @@ class ConceptFetcher(object):
         self.local_cache_dict = {}
 
     def setup_rdf_graph(self, uri):
-        '''Function to set up self.rdf_graph if the URI is new
-        '''
+        """Function to set up self.rdf_graph if the URI is new
+        """
         if self.uri != uri:
             self.parse_rdf(self.dereference_uri(uri)) 
             self.uri = uri
@@ -115,7 +115,7 @@ class ConceptFetcher(object):
         # TODO: review all the mimetypes handled by rdflib
         logger.debug('mimetype = %s', mimetype)
         
-        rdf_format = ConceptFetcher.VALID_MIMETYPES.get(mimetype.split(';')[0]) # Only look at string before semicolon
+        rdf_format = ConceptFetcher.VALID_MIMETYPES.get(mimetype.split(';')[0])  # Only look at string before semicolon
 
         if rdf_format is None:
             raise Exception('%s does not represent a valid rdflib RDF format' % mimetype)
@@ -126,9 +126,10 @@ class ConceptFetcher(object):
     def parse_rdf(self, http_response):
         # this parsing will raise an rdflib error if the RDF is broken
         logger.debug('http_response.content = %s', http_response.content)
-        self.rdf_graph = rdflib.Graph().parse(StringIO(http_response.content),
-                                      format=self.get_rdflib_rdf_format(http_response.headers.get('Content-Type'))
-                                      )
+        self.rdf_graph = rdflib.Graph().parse(
+            StringIO(http_response.content),
+            format=self.get_rdflib_rdf_format(http_response.headers.get('Content-Type'))
+        )
 
         logger.debug('graph = %s', self.rdf_graph)
 
@@ -312,7 +313,6 @@ class ConceptFetcher(object):
         self.local_cache_dict[uri] = results
         
         return results
-
 
     def get_debug(self): 
         return self._debug
@@ -534,7 +534,7 @@ class CliValuesValidator:
         :return: True or False
         """
         # https://gist.github.com/dperini/729294
-        URL_REGEX = re.compile(
+        URI_REGEX = re.compile(
             u"^"
             # protocol identifier
             u"(?:(?:https?|ftp)://)"
@@ -569,9 +569,4 @@ class CliValuesValidator:
             u"$"
             , re.UNICODE
         )
-        return re.match(URL_REGEX, uri_candidate)
-
-
-class RdfValuesValidator:
-    # allowed Content-Types for URI dereferencing results
-    pass
+        return re.match(URI_REGEX, uri_candidate)

@@ -43,7 +43,7 @@ class NcSKOSDump(object):
     def __init__(self, arguments=None, debug=False):
         """
         NcSKOSDump constructor
-        :param arguments: optional list of ncdump arguments with additional optional "--skos <skos_option>=<value>..." arguments
+        :param arguments: optional list of ncdump args with additional optional "--skos <skos_option>=<value>..." args
         :param debug: Boolean debug output flag
         """
         self._error = None
@@ -59,9 +59,9 @@ class NcSKOSDump(object):
     def get_skos_args(self, arguments):
         """
         Helper function to split SKOS options from ncdump arguments
-        :param arguments: ncdump arguments with optional "--skos <skos_option>=<value> <skos_option>=<value>..." arguments
+        :param arguments: ncdump args with optional "--skos <skos_option>=<value> <skos_option>=<value>..." args
     
-        :return: ncdump_arguments: List of ncdump arguments WITHOUT optional "--skos <skos_option>=<value> <skos_option>=<value>..." arguments
+        :return: ncdump_arguments: List of ncdump args WITHOUT optional "--skos <skos_option>=<value> <skos_option>=<value>..." args
         :return: skos_option_dict: Dict containing <key>:<value> SKOS options
         """
         key_value_regex = re.compile('(\w+)=(.*)')
