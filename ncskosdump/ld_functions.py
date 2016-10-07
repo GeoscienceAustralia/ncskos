@@ -7,14 +7,16 @@ Created on 30 Sep 2016
 """
 import re
 from StringIO import StringIO
-import requests
-import rdflib
 import logging
 
 # Turn off logging for anything we didn't write - it's just plain annoying
 # N.B: This needs to be before the import for requests and rdflib despite whatever pep8 might whinge about
 logging.getLogger('requests').setLevel(logging.WARNING)
 logging.getLogger('rdflib').setLevel(logging.WARNING)
+
+import requests
+import rdflib
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)  # Initial logging level for this module
 
