@@ -10,9 +10,11 @@ Once installed, the ncskosdump utility can be invoked as follows. Note that ncdu
 SKOS options implemented so far are as follows:
 
 	lang=<lang_code> # e.g. 'en' or 'pl'
-	altLabels=<True|False>
-	narrower=<True|False>
-	broader=<True|False>
+	altLabels=<true|false>
+	narrower=<true|false>
+	broader=<true|false>
+
+The language code is a 2-letter [ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) code.
 
 Note that if no SKOS options are provided, then the prefLabel only will be retrieved in English. The output of this script (whether CDL or XML) retains full compatibility with all Unidata netCDF command line utilities, including [ncgen](https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/netcdf/ncgen.html). 
 
