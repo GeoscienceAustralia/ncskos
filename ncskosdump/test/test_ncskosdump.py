@@ -1,15 +1,15 @@
-'''
+"""
 Unit tests for ncskosdump against a modified NetCDF file
 
 Created on 5Oct.,2016
 
 @author: Alex Ip
-'''
+"""
 import unittest
 import os
 from ncskosdump import NcSKOSDump
 
-SHOW_DEBUG_OUTPUT=False
+SHOW_DEBUG_OUTPUT = False
 
 TEST_NC_PATH = 'sst.ltm.1971-2000_skos.nc' # Test file in the same directory as this script
 SKOS_OPTION_LIST = ['--skos', 'lang=pl', 'altLabels=True', 'narrower=True', 'broader=True']
@@ -27,14 +27,15 @@ TEST_ARG_PERMUTATIONS = [SKOS_OPTION_LIST + ['-hs', os.path.join(TEST_DIR, TEST_
                        [os.path.join(TEST_DIR, TEST_NC_PATH)] + SKOS_OPTION_LIST + ['-hs'],
                        ]
 
-nclddump_object = None # Shared instance so we only invoke the constructor once
+nclddump_object = None  # Shared instance so we only invoke the constructor once
+
 
 class TestNCLDDumpConstructor(unittest.TestCase):
     """Unit tests for NcSKOSDump class."""
     def test_constructor(self):
-        '''
+        """
         Perform test of constructor - RUN THIS BEFORE ANY OTHER NcSKOSDump TESTS
-        '''
+        """
         print 'Testing NcSKOSDump constructor'
         global nclddump_object
         nclddump_object = NcSKOSDump(debug=SHOW_DEBUG_OUTPUT)
@@ -64,9 +65,9 @@ class TestNCLDDumpSystem(unittest.TestCase):
     """Unit tests for NcSKOSDump class."""
     
     def test_process_ncdump(self):
-        '''
+        """
         Perform two format tests using the same NcSKOSDump object to exercise caching code
-        '''
+        """
         print 'Testing process_ncdump function'
         global nclddump_object
         
@@ -109,11 +110,10 @@ def test_suite():
 
     return suite
 
+
 # Define main function
 def main():
     unittest.TextTestRunner(verbosity=2).run(test_suite())
     
 if __name__ == '__main__':
     main()
-    
-    
