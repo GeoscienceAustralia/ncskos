@@ -5,8 +5,6 @@ import os
 
 version = '0.0.0'
 
-os.name
-
 setup(name='ncskosdump',
       version=version,
       packages=[
@@ -31,5 +29,5 @@ setup(name='ncskosdump',
       maintainer_email='nicholas.car@ga.gov.au',
       description='NetCDF Linked Data Dump utility',
       long_description='Prototype NetCDF Linked Data Dump utility - extends ncdump with SKOS vocabulary lookup',
-      license='Apache License 2.0'
+      license='Creative Commons Attribution 4.0 International'
       )
