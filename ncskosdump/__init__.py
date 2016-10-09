@@ -117,18 +117,157 @@ class NcSKOSDump(object):
 
     def process_ncdump(self, arguments):
         """
-        Function to perform skos URI resolution and text substitution on ncdump
-        output
+        Function to perform skos URI resolution and text substitution on
+        ncdump output
         :param arguments: ncdump arguments with optional
             "--skos <skos_option>=<value>..." arguments
         :return: file-like object containing modified ncdump output
         """
+        def process_xml(input_spool, output_spool):
+            '''
+            Internal function to process full XML ncdump output
+            Side effect: Will close input_spool
+            '''
+
+            def process_xml_skos_element(skos_element,
+                                         uri,
+                                         output_spool):
+                '''
+                Internal function to process single SKOS element in XML
+                ncdump output
+                '''
+                logger.debug('skos_element = %s', etree.tostring(
+                    skos_element, pretty_print=False))
+
+                skos_lookup_dict = self.concept_fetcher.get_results(uri)
+                logger.debug('skos_lookup_dict = %s', skos_lookup_dict)
+
+                parent_element = skos_element.getparent()
+                # Fix up formatting
+                tail = parent_element[0].tail
+                parent_element[-1].tail = tail
+
+                # Write each key:value pair as a separate element
+                for key, value in skos_lookup_dict.items():
+                    new_element = parent_element.makeelement(
+                        skos_element.tag, attrib={'name': key, 'value': value})
+                    new_element.tail = tail
+                    logger.debug('new_element = %s', etree.tostring(
+                        new_element, pretty_print=False))
+                    parent_element.append(new_element)
+
+                # parent_element.remove(skos_element) # Delete original element
+
+                output_spool.write(re.sub('(\r|\n)+', os.linesep,
+                                          etree.tostring(netcdf_tree,
+                                                         method='xml',
+                                                         pretty_print=True,
+                                                         xml_declaration=True,
+                                                         encoding="UTF-8")))
+
+            netcdf_tree = etree.fromstring(input_spool.read())
+            input_spool.close()  # We don't need this any more
+
+            namespace = '{' + netcdf_tree.nsmap[None] + '}'
+
+            for skos_element \
+                    in [attribute_element for attribute_element
+                        in netcdf_tree.iterfind(path='.//' + namespace +
+                                                'attribute')
+                        if (attribute_element.attrib.get('name') ==
+                            NcSKOSDump.SKOS_ATTRIBUTE)
+                        ]:
+                try:
+                    uri = skos_element.attrib['value']
+                    logger.debug('uri = %s', uri)
+
+                    process_xml_skos_element(skos_element, 
+                                             uri, 
+                                             output_spool
+                                             )
+                except Exception as e:
+                    logger.error(
+                        'URI resolution failed for %s: %s', uri, e.message)
+                    if self.error:
+                        self._error += '\n' + e.message
+                    else:
+                        self._error = e.message
+
+        def process_cdl(input_spool, output_spool):
+            '''
+            Internal function to process full CDL ncdump output
+            Side effect: Will close input_spool
+            '''
+
+            def process_cdl_skos_line(skos_line,
+                                      variable_name,
+                                      uri,
+                                      output_spool):
+                '''
+                Internal function to process a single line of CDL ncdump
+                output
+                '''
+
+                skos_lookup_dict = self.concept_fetcher.get_results(
+                    uri)
+                logger.debug('skos_lookup_dict = %s', skos_lookup_dict)
+
+                # Write each key:value pair as a separate line
+                for key, value in skos_lookup_dict.items():
+                    modified_line = (
+                        skos_line.replace(variable_name +
+                                          ':' +
+                                          NcSKOSDump.SKOS_ATTRIBUTE,
+                                          variable_name + ':' + key
+                                          ).replace(uri, value)
+                                     )
+                    logger.debug('modified_line = %s', modified_line)
+                    output_spool.write(modified_line)
+
+            # TODO: Investigate potential issues around global attributes
+            # Example: '    time:concept_uri =
+            # "http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/time"
+            # ;'
+            attribute_regex_string = ('^\s*(\w*):' +
+                                      NcSKOSDump.SKOS_ATTRIBUTE +
+                                      '\s*=\s*"(http(s*)://.*)"\s*;\s*$'
+                                      )
+            logger.debug('attribute_regex_string = %s', attribute_regex_string)
+            attribute_regex = re.compile(attribute_regex_string)
+
+            for input_line in input_spool.readlines():
+                logger.debug('input_line = %s', input_line)
+                output_spool.write(input_line)  # Output original line
+
+                attribute_match = re.match(attribute_regex, input_line)
+                if attribute_match is not None: # input line contains SKOS URI
+                    try:
+                        logger.debug('attribute_match.groups() = %s',
+                                     attribute_match.groups())
+                        variable_name = attribute_match.group(1)
+                        uri = attribute_match.group(2)
+                        logger.debug('variable_name = %s, uri = %s',
+                                     variable_name, uri)
+
+                        process_cdl_skos_line(
+                            input_line, variable_name, uri, output_spool
+                            )
+                    except Exception as e:
+                        logger.error(
+                            'URI resolution failed for %s: %s', uri, e.message)
+                        if self.error:
+                            self._error += '\n' + e.message
+                        else:
+                            self._error = e.message
+
+            input_spool.close()
+
         self._error = None
         ncdump_arguments, skos_option_dict = self.get_skos_args(arguments)
         logger.debug('ncdump_arguments = %s', ncdump_arguments)
         logger.debug('skos_option_dict = %s', skos_option_dict)
 
-        xml_output = (
+        is_xml_output = (
             len([arg for arg in ncdump_arguments
                  if re.match('\-\w*x\w*', arg)]) > 0)
 
@@ -169,98 +308,11 @@ class NcSKOSDump(object):
             exit(1)  # Don't proceed without ncdump output
 
         input_spool.seek(0)
-
-        if xml_output:
-            netcdf_tree = etree.fromstring(input_spool.read())
-            input_spool.close()  # We don't need this any more
-
-            namespace = '{' + netcdf_tree.nsmap[None] + '}'
-
-            for skos_element \
-                    in [attribute_element for attribute_element
-                        in netcdf_tree.iterfind(path='.//' + namespace +
-                                                'attribute')
-                        if (attribute_element.attrib.get('name') ==
-                            NcSKOSDump.SKOS_ATTRIBUTE)
-                        ]:
-
-                logger.debug('skos_element = %s', etree.tostring(
-                    skos_element, pretty_print=False))
-                uri = skos_element.attrib['value']
-                logger.debug('uri = %s', uri)
-
-                skos_lookup_dict = self.concept_fetcher.get_results(uri)
-                logger.debug('skos_lookup_dict = %s', skos_lookup_dict)
-
-                parent_element = skos_element.getparent()
-                # Fix up formatting
-                tail = parent_element[0].tail
-                parent_element[-1].tail = tail
-
-                # Write each key:value pair as a separate element
-                for key, value in skos_lookup_dict.items():
-                    new_element = parent_element.makeelement(
-                        skos_element.tag, attrib={'name': key, 'value': value})
-                    new_element.tail = tail
-                    logger.debug('new_element = %s', etree.tostring(
-                        new_element, pretty_print=False))
-                    parent_element.append(new_element)
-
-                # parent_element.remove(skos_element) # Delete original element
-
-                output_spool.write(re.sub('(\r|\n)+', os.linesep,
-                                          etree.tostring(netcdf_tree,
-                                                         method='xml',
-                                                         pretty_print=True,
-                                                         xml_declaration=True,
-                                                         encoding="UTF-8")))
-
+        if is_xml_output:
+            process_xml(input_spool, output_spool)
         else:  # CDL output
-            # TODO: Investigate potential issues around global attributes
-            # Example: '    time:concept_uri =
-            # "http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/time"
-            # ;'
-            attribute_regex_string = ('^\s*(\w*):' +
-                                      NcSKOSDump.SKOS_ATTRIBUTE +
-                                      '\s*=\s*"(http(s*)://.*)"\s*;\s*$')
-            logger.debug('attribute_regex_string = %s', attribute_regex_string)
-            attribute_regex = re.compile(attribute_regex_string)
-
-            for input_line in input_spool.readlines():
-                logger.debug('input_line = %s', input_line)
-
-                output_spool.write(input_line)  # Output original line
-
-                attribute_match = re.match(attribute_regex, input_line)
-                if attribute_match is not None:
-                    try:
-                        logger.debug('attribute_match.groups() = %s',
-                                     attribute_match.groups())
-                        variable_name = attribute_match.group(1)
-                        uri = attribute_match.group(2)
-                        logger.debug('variable_name = %s, uri = %s',
-                                     variable_name, uri)
-
-                        skos_lookup_dict = self.concept_fetcher.get_results(
-                            uri)
-                        logger.debug('skos_lookup_dict = %s', skos_lookup_dict)
-
-                        # Write each key:value pair as a separate line
-                        for key, value in skos_lookup_dict.items():
-                            modified_line = input_line.replace(variable_name +
-                                                               ':' +
-                                                               NcSKOSDump.SKOS_ATTRIBUTE,
-                                                               variable_name + ':' + key
-                                                               ).replace(uri, value)
-                            logger.debug('modified_line = %s', modified_line)
-                            output_spool.write(modified_line)
-
-                    except Exception as e:
-                        logger.error(
-                            'URI resolution failed for %s: %s', uri, e.message)
-                        self._error = e.message
-
-            input_spool.close()
+            process_cdl(input_spool, output_spool)
+        # input_spool is now closed
 
         output_spool.seek(0)  # Rewind output_spool ready for reading
 
