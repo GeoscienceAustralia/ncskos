@@ -181,8 +181,8 @@ class NcSKOSDump(object):
                     uri = skos_element.attrib['value']
                     logger.debug('uri = %s', uri)
 
-                    process_xml_skos_element(skos_element, 
-                                             uri, 
+                    process_xml_skos_element(skos_element,
+                                             uri,
                                              output_spool
                                              )
                 except Exception as e:
@@ -220,7 +220,7 @@ class NcSKOSDump(object):
                                           NcSKOSDump.SKOS_ATTRIBUTE,
                                           variable_name + ':' + key
                                           ).replace(uri, value)
-                                     )
+                    )
                     logger.debug('modified_line = %s', modified_line)
                     output_spool.write(modified_line)
 
@@ -240,7 +240,7 @@ class NcSKOSDump(object):
                 output_spool.write(input_line)  # Output original line
 
                 attribute_match = re.match(attribute_regex, input_line)
-                if attribute_match is not None: # input line contains SKOS URI
+                if attribute_match is not None:  # input line contains SKOS URI
                     try:
                         logger.debug('attribute_match.groups() = %s',
                                      attribute_match.groups())
@@ -251,7 +251,7 @@ class NcSKOSDump(object):
 
                         process_cdl_skos_line(
                             input_line, variable_name, uri, output_spool
-                            )
+                        )
                     except Exception as e:
                         logger.error(
                             'URI resolution failed for %s: %s', uri, e.message)
