@@ -255,12 +255,10 @@ class NcSKOSDump(object):
                             logger.debug('modified_line = %s', modified_line)
                             output_spool.write(modified_line)
 
-                        # continue  # Process next input line
                     except Exception as e:
-                        logger.warning(
+                        logger.error(
                             'URI resolution failed for %s: %s', uri, e.message)
                         self._error = e.message
-                        # Fall back to original input line
 
             input_spool.close()
 
