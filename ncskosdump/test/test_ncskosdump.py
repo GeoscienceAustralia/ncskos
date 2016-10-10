@@ -12,7 +12,7 @@ from ncskosdump import NcSKOSDump
 SHOW_DEBUG_OUTPUT = False
 
 # Test file in the same directory as this script
-TEST_NC_PATH = 'sst.ltm.1971-2000_skos.nc'
+TEST_NC_PATH = 'sst.ltm.2000_skos.nc'
 SKOS_OPTION_LIST = ['--skos', 'lang=pl',
                     'altLabels=True', 'narrower=True', 'broader=True']
 SKOS_OPTION_DICT = {'lang': 'pl', 'altLabels': True,
