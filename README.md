@@ -20,7 +20,7 @@ Note that if no SKOS options are provided, then the prefLabel only will be retri
 
 For example:
 
-	ncskosdump -hs ~/workspace/ncskosdump/ncskosdump/test/sst.ltm.1971-2000_skos.nc --skos lang=pl altLabels=True narrower=True broader=True
+	ncskosdump -hs ~/workspace/ncskosdump/ncskosdump/test/sst.ltm.2000_skos.nc --skos lang=pl altLabels=True narrower=True broader=True
 
 will replace the following CDL line:
 
