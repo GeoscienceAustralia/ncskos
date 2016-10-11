@@ -50,6 +50,11 @@ with:
 	<attribute name="skos__prefLabel_pl" value="temperatura powierzchni morza"/>
 	<attribute name="skos__altLabels" value="SST"/>
 
+
+Note that full unit tests can be run by entering the following:
+
+	python -m ncskosdump.test
+
 	
 ## Authors and Contact
 Nicholas Car  
