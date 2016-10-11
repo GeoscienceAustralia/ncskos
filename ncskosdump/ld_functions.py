@@ -312,19 +312,19 @@ class ConceptFetcher(object):
         # get the prefLabel regardless of options set
         prefLabel, lang = self.get_prefLabel(
             uri, lang=self.skos_params.get('lang'))
-        results = {'skos_prefLabel' + '_' + lang: prefLabel}
+        results = {'skos__prefLabel' + '_' + lang: prefLabel}
 
         # only get this if the arg altLabels=true
         if self.skos_params.get('altLabels'):
-            results['skos_altLabels'] = str(', '.join(self.get_altLabels(uri)))
+            results['skos__altLabels'] = str(', '.join(self.get_altLabels(uri)))
 
         # only get this if the arg narrower=true
         if self.skos_params.get('narrower'):
-            results['skos_narrower'] = str(', '.join(self.get_narrower(uri)))
+            results['skos__narrower'] = str(', '.join(self.get_narrower(uri)))
 
         # only get this if the arg broader=true
         if self.skos_params.get('broader'):
-            results['skos_broader'] = str(', '.join(self.get_broader(uri)))
+            results['skos__broader'] = str(', '.join(self.get_broader(uri)))
 
         self.local_cache_dict[uri] = results
 

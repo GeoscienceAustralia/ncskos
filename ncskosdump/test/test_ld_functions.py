@@ -29,12 +29,12 @@ TEST_URI = 'http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_te
 INVALID_URI = 'This is not a URI'
 
 EXPECTED_RESULT = {
-    'skos_broader': '',
-    'skos_narrower': 'http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_skin_temperature, \
+    'skos__broader': '',
+    'skos__narrower': 'http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_skin_temperature, \
 http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_subskin_temperature, \
 http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/square_of_sea_surface_temperature',
-    'skos_prefLabel_pl': 'temperatura powierzchni morza',
-    'skos_altLabels': 'SST'
+    'skos__prefLabel_pl': 'temperatura powierzchni morza',
+    'skos__altLabels': 'SST'
 }
 
 VALID_MIMETYPES = {
@@ -174,7 +174,7 @@ class TestConceptFetcherMidLevel(unittest.TestCase):
         assert get_prefLabel_result[1] == TEST_SKOS_PARAMS['lang'], \
             'prefLabel language "%s" does not match "%s"' % (
                 get_prefLabel_result[1], TEST_SKOS_PARAMS['lang'])
-        assert get_prefLabel_result[0] == EXPECTED_RESULT['skos_prefLabel_%s' % get_prefLabel_result[1]], \
+        assert get_prefLabel_result[0] == EXPECTED_RESULT['skos__prefLabel_%s' % get_prefLabel_result[1]], \
             'Failed "%s" language get_prefLabel test with "%s"' % (
                 TEST_SKOS_PARAMS['lang'], TEST_URI)
 
@@ -185,7 +185,7 @@ class TestConceptFetcherMidLevel(unittest.TestCase):
         get_altLabels_result = [
             str(altlabel) for altlabel in concept_fetcher_object.get_altLabels(TEST_URI)]
         assert sorted(get_altLabels_result) == [
-            item for item in sorted(EXPECTED_RESULT['skos_altLabels'].split(', ')) if item
+            item for item in sorted(EXPECTED_RESULT['skos__altLabels'].split(', ')) if item
         ]
 
     def test_get_narrower(self):
@@ -195,7 +195,7 @@ class TestConceptFetcherMidLevel(unittest.TestCase):
         get_narrower_result = [
             str(altlabel) for altlabel in concept_fetcher_object.get_narrower(TEST_URI)]
         assert sorted(get_narrower_result) == [
-            item for item in sorted(EXPECTED_RESULT['skos_narrower'].split(', ')) if item
+            item for item in sorted(EXPECTED_RESULT['skos__narrower'].split(', ')) if item
         ]
 
     def test_get_broader(self):
@@ -205,7 +205,7 @@ class TestConceptFetcherMidLevel(unittest.TestCase):
         get_broader_result = [
             str(altlabel) for altlabel in concept_fetcher_object.get_broader(TEST_URI)]
         assert sorted(get_broader_result) == [
-            item for item in sorted(EXPECTED_RESULT['skos_broader'].split(', ')) if item
+            item for item in sorted(EXPECTED_RESULT['skos__broader'].split(', ')) if item
         ]
 
 

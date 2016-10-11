@@ -1,6 +1,6 @@
 #!/bin/bash
 # Shell script to invoke ncskosdump Python script in BASH
 # Written by Alex Ip 4/10/2016
-# Example invocation: ncskosdump -hs ~/workspace/ncskosdump/ncskosdump/test/sst.ltm.1971-2000_skos.nc --skos lang=pl altLabels=True narrower=True broader=True
+# Example invocation: ncskosdump -hs ~/workspace/ncskosdump/ncskosdump/test/sst.ltm.2000_skos.nc --skos lang=pl altLabels=True narrower=True broader=True
 
 python -m ncskosdump $@

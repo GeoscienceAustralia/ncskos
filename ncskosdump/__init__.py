@@ -41,7 +41,7 @@ class NcSKOSDump(object):
     Wraps ncdump to perform SKOS vocabulary lookups and substitute these into
     the CDL output
     """
-    SKOS_ATTRIBUTE = 'skos_concept_uri'  # Attribute name for SKOS URIs
+    SKOS_ATTRIBUTE = 'skos__concept_uri'  # Attribute name for SKOS URIs
     MAX_MEM = 1000000000  # Limit before switching from stringIO to file (1GB?)
 
     def __init__(self, arguments=None, debug=False):

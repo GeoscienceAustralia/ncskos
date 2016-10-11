@@ -3,7 +3,7 @@ A simple command line tool that wraps and extends the well-known netCDF tool [nc
 
 Note: This utility requires that the netCDF command line utilities be installed. These utilities are available from: http://www.unidata.ucar.edu/software/netcdf/docs/getting_and_building_netcdf.html
 
-Once installed, the ncskosdump utility can be invoked as follows. Note that ncdump options are passed through to ncdump, while SKOS options are passed as <key>=<value> arguments after a "--skos" flag. The attribute name for SKOS concept lookups in the NetCDF file is 'skos_concept_uri'.
+Once installed, the ncskosdump utility can be invoked as follows. Note that ncdump options are passed through to ncdump, while SKOS options are passed as <key>=<value> arguments after a "--skos" flag. The attribute name for SKOS concept lookups in the NetCDF file is 'skos__concept_uri'.
 
 	ncskosdump <ncdump_options> <netCDF_filename> --skos <SKOS_options>
 
@@ -24,15 +24,15 @@ For example:
 
 will replace the following CDL line:
 
-	sst:skos_concept_uri = "http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_temperature" ;
+	sst:skos__concept_uri = "http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_temperature" ;
 
 with:
 
-	sst:skos_concept_uri = "http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_temperature" ;
-	sst:skos_broader = "" ;
-	sst:skos_narrower = "http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_skin_temperature, http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_subskin_temperature, http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/square_of_sea_surface_temperature" ;
-	sst:skos_prefLabel_pl = "temperatura powierzchni morza" ;
-	sst:skos_altLabels = "SST" ;
+	sst:skos__concept_uri = "http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_temperature" ;
+	sst:skos__broader = "" ;
+	sst:skos__narrower = "http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_skin_temperature, http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_subskin_temperature, http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/square_of_sea_surface_temperature" ;
+	sst:skos__prefLabel_pl = "temperatura powierzchni morza" ;
+	sst:skos__altLabels = "SST" ;
 	
 XML output (via the -x ncdump option) is also supported. For example:
 
@@ -40,15 +40,15 @@ XML output (via the -x ncdump option) is also supported. For example:
 
 will replace the following XML element:
 
-	<attribute name="skos_concept_uri" value="http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_temperature" />
+	<attribute name="skos__concept_uri" value="http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_temperature" />
 
 with:
 
-	<attribute name="skos_concept_uri" value="http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_temperature"/>
-	<attribute name="skos_broader" value=""/>
-	<attribute name="skos_narrower" value="http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_skin_temperature, http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_subskin_temperature, http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/square_of_sea_surface_temperature"/>
-	<attribute name="skos_prefLabel_pl" value="temperatura powierzchni morza"/>
-	<attribute name="skos_altLabels" value="SST"/>
+	<attribute name="skos__concept_uri" value="http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_temperature"/>
+	<attribute name="skos__broader" value=""/>
+	<attribute name="skos__narrower" value="http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_skin_temperature, http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_subskin_temperature, http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/square_of_sea_surface_temperature"/>
+	<attribute name="skos__prefLabel_pl" value="temperatura powierzchni morza"/>
+	<attribute name="skos__altLabels" value="SST"/>
 
 	
 ## Authors and Contact
