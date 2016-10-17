@@ -8,6 +8,7 @@ Created on 5Oct.,2016
 import unittest
 from pprint import pprint
 from ncskosdump import ld_functions  # ConceptFetcher, CliValuesValidator
+import requests
 
 SHOW_DEBUG_OUTPUT = False
 
@@ -48,6 +49,22 @@ VALID_MIMETYPES = {
 
 INVALID_MIMETYPE = 'nothing'
 
+
+class FAKE_HTTP_RESPONSE_VALID:
+    content = open('../../examples/tos.ttl').read()
+    headers = {'Content-Type': 'text/turtle'}
+
+
+class FAKE_HTTP_RESPONSE_INVALID:
+    content = '''This is not valid turtle'''
+    headers = {'Content-Type': 'text/turtle'}
+
+
+class FAKE_HTTP_RESPONSE_MIME_BAD:
+    content = '''This is not valid turtle'''
+    headers = {'Content-Type': 'text/plain'}
+
+
 concept_fetcher_object = None  # Shared instance so we only invoke the constructor once
 
 
@@ -81,7 +98,7 @@ class TestConceptFetcherLowLevel(unittest.TestCase):
     def test_valid_command_line_args(self):
         print 'Testing valid_command_line_args function'
         global concept_fetcher_object
-        
+
         assert concept_fetcher_object.valid_command_line_args(TEST_SKOS_PARAMS), \
             'Failed valid_command_line_args test with %s' % TEST_SKOS_PARAMS
         try:
@@ -89,11 +106,11 @@ class TestConceptFetcherLowLevel(unittest.TestCase):
                 'Failed negative valid_command_line_args test with %s' % INVALID_SKOS_PARAMS
         except:
             pass
-        
-    def test_valid_skos_concept_uri(self): 
+
+    def test_valid_skos_concept_uri(self):
         print 'Testing valid_skos_concept_uri function'
         global concept_fetcher_object
-        
+
         assert concept_fetcher_object.valid_skos_concept_uri(TEST_URI), \
             'Failed valid_skos_concept_uri test with %s' % TEST_URI
         try:
@@ -105,7 +122,7 @@ class TestConceptFetcherLowLevel(unittest.TestCase):
     def test_dereference_uri(self):
         print 'Testing dereference_uri function'
         global concept_fetcher_object
-        
+
         assert '<Response [200]>' in str(concept_fetcher_object.dereference_uri(TEST_URI)), \
             'Failed dereference_uri test with %s' % TEST_URI
         try:
@@ -113,34 +130,50 @@ class TestConceptFetcherLowLevel(unittest.TestCase):
                 'Failed negative dereference_uri test with %s' % INVALID_URI
         except:
             pass
-            
+
     def test_get_rdflib_rdf_format(self):
         print 'Testing get_rdflib_rdf_format function'
         global concept_fetcher_object
-        
+
         for mimetype, rdf_format in VALID_MIMETYPES.items():
             assert concept_fetcher_object.get_rdflib_rdf_format(mimetype + ';charset=utf-8') == rdf_format
-        try:    
+        try:
             assert concept_fetcher_object.get_rdflib_rdf_format(INVALID_MIMETYPE) not in VALID_MIMETYPES.values(), \
                 'Failed negative get_rdflib_rdf_format test with "%s"' % INVALID_MIMETYPE
         except:
             pass
-        
-    def test_valid_skos(self): 
+
+    def test_parse_rdf(self):
+        print 'Testing test_parse_rdf function'
+        global concept_fetcher_object
+
+        assert concept_fetcher_object.parse_rdf(FAKE_HTTP_RESPONSE_VALID), 'Failed parse_skos test with static VALID input RDF'
+        try:
+            assert not concept_fetcher_object.parse_rdf(FAKE_HTTP_RESPONSE_INVALID), \
+                'Failed parse_skos test with static INVALID input RDF'
+        except:
+            pass
+        try:
+            assert not concept_fetcher_object.parse_rdf(FAKE_HTTP_RESPONSE_MIME_BAD), \
+                'Failed parse_skos test with bad mimetype (text/plain)'
+        except:
+            pass
+
+    def test_valid_skos(self):
         print 'Testing test_valid_skos function'
         global concept_fetcher_object
-        
+
         concept_fetcher_object.parse_rdf(concept_fetcher_object.dereference_uri(TEST_URI))  # Need self.g graph object
-            
+
         assert concept_fetcher_object.valid_skos(TEST_URI), 'Failed valid_skos test with "%s"' % TEST_URI
-        try:    
+        try:
             concept_fetcher_object.parse_rdf(concept_fetcher_object.dereference_uri(INVALID_URI))  # This will prob fail
             assert not concept_fetcher_object.valid_skos(INVALID_URI), \
                 'Failed negative valid_skos test with "%s"' % INVALID_URI
         except:
             pass
-        
-        
+
+
 class TestConceptFetcherMidLevel(unittest.TestCase):
     """Mid-level unit tests for ConceptFetcher class"""
     def test_get_prefLabel(self):

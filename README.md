@@ -50,6 +50,8 @@ with:
 	<attribute name="skos_prefLabel_pl" value="temperatura powierzchni morza"/>
 	<attribute name="skos_altLabels" value="SST"/>
 
+## Scenarios of use
+See the [inference scenario](examples/inferencing.md) for a brief explanation of how to use this tool to group files linked to a hierarchical vocabulary.
 	
 ## Authors and Contact
 Nicholas Car  

@@ -123,8 +123,9 @@ class ConceptFetcher(object):
     def parse_rdf(self, http_response):
         # this parsing will raise an rdflib error if the RDF is broken
         logger.debug('http_response.content = %s', http_response.content)
+        potential_rdf = StringIO(http_response.content)
         self.rdf_graph = rdflib.Graph().parse(
-            StringIO(http_response.content),
+            potential_rdf,
             format=self.get_rdflib_rdf_format(http_response.headers.get('Content-Type'))
         )
 
