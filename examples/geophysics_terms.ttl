@@ -1,0 +1,175 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+
+<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys> a skos:ConceptScheme ;
+	dc:creator "Alex Ip";
+	dc:date "2016-10-07";
+	dct:title "netCDF-LD example - Geophysics Terms"@en;
+	skos:changeNote "This vocabulary has been made by hand, in a text editor"@en;
+	skos:editorialNote "This vocabulary is a SKOS formulation of terms from the 'CF Conventions and Metadata' (http://cfconventions.org/) vocabulary's v36 of the 'CF Standard Name Table' (http://cfconventions.org/Data/cf-standard-names/36/build/cf-standard-name-table.html). It has been built to demonstrate vocabulary reasoning, not to be accurate for scientific purposes."@en;
+	skos:hasTopConcept <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/geophysics> , <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/time> , <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/latitude>, <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/longitude> ;
+	skos:prefLabel "netCDF-LD example - Geophysics Terms"@en;
+	dct:contributor "Alex Ip";
+	dct:creator "Alex Ip";
+	dct:publisher "Geoscience Australia";
+	dct:subject "Geophysics Terms"@en;
+	dct:description "This vocabulary defines terms relating to Geophysics terms and 3 other terms for time, latitude and longitude, taken from the CF conventions v36 Standard Name Table (http://cfconventions.org/Data/cf-standard-names/36/build/cf-standard-name-table.html)."@en;
+	dct:modified "2016-10-07"^^xsd:date;
+	dct:issued "2016-10-07"^^xsd:date;
+	owl:versionInfo "v1.0" .
+
+<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/all_concepts> a skos:Collection ;
+	skos:member	
+	    <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/geophysics> ,
+		<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/time> ,
+		<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/latitude> ,
+		<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/longitude> ,
+		<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/gravity> ,
+		<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/magnetics> ,
+		<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/radiometrics> ,
+		<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/seismic> ,
+		<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/active_seismic> ,
+		<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/passive_seismic> ,
+		<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/onshore_seismic> ,
+		<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/offshore_seismic> ,
+		<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/onshore_active_seismic> ,
+		<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/onshore_passive_seismic> ,
+		<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/offshore_active_seismic> ,
+		<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/offshore_passive_seismic> ,
+.
+
+<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/geophysics> a skos:Concept;
+	skos:prefLabel "geophysics"@en;
+	skos:altLabel "geophysics"@en;
+	skos:definition ""@en;
+	skos:inScheme <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys>;
+	skos:topConceptOf <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys>;
+	skos:narrower <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/gravity> ,
+		<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/magnetics> ,
+		<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/radiometrics> ,
+		<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/seismic>;
+.
+
+<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/time> a skos:Concept;
+	skos:prefLabel "time"@en, "czas"@pl;
+	skos:definition "Time is the indefinite continued progress of existence and events that occur in apparently irreversible succession from the past through the present to the future."@en;
+	skos:topConceptOf <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys>;
+	skos:inScheme <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys>;
+.
+
+<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/latitude> a skos:Concept;
+	skos:prefLabel "latitude"@en, "szerokość"@pl;
+	skos:definition "The angular distance of a place north or south of the earth's equator, or of the equator of a celestial object, usually expressed in degrees and minutes.."@en;
+	skos:topConceptOf <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys>;
+	skos:inScheme <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys>;
+.
+
+<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/longitude> a skos:Concept;
+	skos:prefLabel "longitude"@en, "długość geograficzna"@pl;
+	skos:definition "The angular distance of a place east or west of the Greenwich meridian, or west of the standard meridian of a celestial object, usually expressed in degrees and minutes."@en;
+	skos:topConceptOf <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys>;
+	skos:inScheme <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys>;
+.
+
+<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/gravity> a skos:Concept;
+	skos:prefLabel "gravity"@en;
+	skos:altLabel "grav"^^xsd:string ;
+	skos:definition "Gravity data"@en;
+	skos:inScheme <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys>;
+	skos:narrower ;
+.
+
+<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/seismic> a skos:Concept;
+	skos:prefLabel "seismic"@en;
+	skos:altLabel "seis"^^xsd:string ;
+	skos:definition "Seismic data"@en;
+	skos:inScheme <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys>;
+	skos:broader <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/geophysics>;
+	skos:narrower <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/active_seismic> ,
+		<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/passive_seismic> ,
+		<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/onshore_seismic> ,
+		<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/offshore_seismic>;
+.
+
+<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/active_seismic> a skos:Concept;
+	skos:prefLabel "active seismic"@en;
+	skos:altLabel "act. seis"^^xsd:string ;
+	skos:definition "Active seismic data"@en;
+	skos:inScheme <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys>;
+	skos:broader <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/seismic>;
+	skos:narrower <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/onshore_active_seismic> ,
+		<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/offshore_active_seismic>;
+.
+
+<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/passive_seismic> a skos:Concept;
+	skos:prefLabel "passive seismic"@en;
+	skos:altLabel "pass. seis"^^xsd:string ;
+	skos:definition "Passive seismic data"@en;
+	skos:inScheme <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys>;
+	skos:broader <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/seismic>;
+	skos:narrower <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/onshore_passive_seismic> ,
+		<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/offshore_passive_seismic>;
+.
+
+<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/onshore_seismic> a skos:Concept;
+	skos:prefLabel "onshore seismic"@en;
+	skos:altLabel "onshore seis"^^xsd:string ;
+	skos:definition "Onshore seismic data"@en;
+	skos:inScheme <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys>;
+	skos:broader <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/seismic>;
+	skos:narrower <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/onshore_active_seismic> ,
+	    <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/onshore_passive_seismic>;
+.
+
+<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/offshore_seismic> a skos:Concept;
+	skos:prefLabel "offshore seismic"@en;
+	skos:altLabel "offshore seis"^^xsd:string ;
+	skos:definition "Offshore seismic data"@en;
+	skos:inScheme <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys>;
+	skos:broader <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/seismic>;
+	skos:narrower <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/offshore_active_seismic>;
+		<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/offshore_passive_seismic>;
+.
+
+<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/onshore_active_seismic> a skos:Concept;
+	skos:prefLabel "onshore active seismic"@en;
+	skos:altLabel "onshore active seis"^^xsd:string ;
+	skos:definition "onshore active seismic data"@en;
+	skos:inScheme <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys>;
+	skos:broader <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/onshore_seismic>
+	    <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/active_seismic>;
+.
+
+<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/onshore_passive_seismic> a skos:Concept;
+	skos:prefLabel "onshore passive seismic"@en;
+	skos:altLabel "onshore passive seis"^^xsd:string ;
+	skos:definition "onshore passive seismic data"@en;
+	skos:inScheme <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys>;
+	skos:broader <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/onshore_seismic>
+	    <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/passive_seismic>;
+.
+
+<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/offshore_active_seismic> a skos:Concept;
+	skos:prefLabel "offshore active seismic"@en;
+	skos:altLabel "offshore active seis"^^xsd:string ;
+	skos:definition "offshore active seismic data"@en;
+	skos:inScheme <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys>;
+	skos:broader <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/offshore_seismic>
+	    <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/active_seismic>;
+.
+
+<http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/offshore_passive_seismic> a skos:Concept;
+	skos:prefLabel "offshore passive seismic"@en;
+	skos:altLabel "offshore passive seis"^^xsd:string ;
+	skos:definition "offshore passive seismic data"@en;
+	skos:inScheme <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys>;
+	skos:broader <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/offshore_seismic>
+	    <http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-geophys/passive_seismic>;
+.
+

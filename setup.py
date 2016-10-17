@@ -14,8 +14,8 @@ setup(name='ncskosdump',
       package_data={
           'ncskosdump.test': ['sst.ltm.1971-2000_skos.nc']
       },
-      scripts=(['bin/ncskosdump'] if (os.name == 'posix') 
-               else (['bin\\ncskosdump.bat'] if (os.name == 'nt') 
+      scripts=(['bin/ncskosdump'] if (os.name == 'posix')
+               else (['bin\\ncskosdump.bat'] if (os.name == 'nt')
                      else [])),
       requires=[
           'distutils',

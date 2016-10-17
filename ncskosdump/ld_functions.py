@@ -7,14 +7,16 @@ Created on 30 Sep 2016
 """
 import re
 from StringIO import StringIO
-import requests
-import rdflib
 import logging
 
 # Turn off logging for anything we didn't write - it's just plain annoying
-# N.B: This needs to be before the import for requests and rdflib despite whatever pep8 might whinge about
+# N.B: This needs to be before the import for requests and rdflib despite
+# whatever pep8 might whinge about
 logging.getLogger('requests').setLevel(logging.WARNING)
 logging.getLogger('rdflib').setLevel(logging.WARNING)
+import requests  # nopep8
+import rdflib  # nopep8
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)  # Initial logging level for this module
 
@@ -41,21 +43,21 @@ class ConceptFetcher(object):
         self.set_debug(debug)  # Turn debug output on or off as required
         self.uri = None
         self.rdf_graph = None
-        
+
         if not self.valid_command_line_args(skos_params):
             exit()
-            
+
         self.skos_params = skos_params
-        
+
         self.local_cache_dict = {}
 
     def setup_rdf_graph(self, uri):
         """Function to set up self.rdf_graph if the URI is new
         """
         if self.uri != uri:
-            self.parse_rdf(self.dereference_uri(uri)) 
+            self.parse_rdf(self.dereference_uri(uri))
             self.uri = uri
-               
+
     def valid_command_line_args(self, skos_params):
         """Ensure that we receive valid command line args
         :param skos_params: dict containing SKOS options
@@ -64,30 +66,40 @@ class ConceptFetcher(object):
         # ensure only allowed k/v pairs exist
         for k in skos_params.keys():
             if k not in CliValuesValidator.keys:
-                raise Exception('The command line argument {0!s} is not valid.', k)
+                raise Exception(
+                    'The command line argument {0!s} is not valid.', k)
 
         # ensure language param, if present, is legal
-        if skos_params.get('lang') and skos_params.get('lang') not in CliValuesValidator.language_codes:
-            raise Exception('The requested language code is not a valid 2-letter ISO 639-1:200 code.')
+        if skos_params.get('lang') and skos_params.get(
+                'lang') not in CliValuesValidator.language_codes:
+            raise Exception(
+                'The requested language code is not a valid 2-letter ISO 639-1:200 code.')
 
         # if altLabels param is present, must be a boolean
-        if skos_params.get('altLabels') and type(skos_params.get('altLabels')) != bool:
-            raise Exception('An altLabels argument, if present, must be either "true" or "false"')
+        if skos_params.get('altLabels') and not isinstance(
+                skos_params.get('altLabels'), bool):
+            raise Exception(
+                'An altLabels argument, if present, must be either "true" or "false"')
 
         # if broader param is present, must be a boolean
-        if skos_params.get('broader') and type(skos_params.get('broader')) != bool:
-            raise Exception('A broader argument, if present, must be either "true" or "false"')
+        if skos_params.get('broader') and not isinstance(
+                skos_params.get('broader'), bool):
+            raise Exception(
+                'A broader argument, if present, must be either "true" or "false"')
 
         # if narrower param is present, must be a boolean
-        if skos_params.get('narrower') and type(skos_params.get('narrower')) != bool:
-            raise Exception('A narrower argument, if present, must be either "true" or "false"')
+        if skos_params.get('narrower') and not isinstance(
+                skos_params.get('narrower'), bool):
+            raise Exception(
+                'A narrower argument, if present, must be either "true" or "false"')
 
         # if we've made it this far, the args are valid
         return True
 
     def valid_skos_concept_uri(self, potential_uri):
         if not CliValuesValidator.is_a_uri(potential_uri):
-            raise Exception('The skos_concept_uri netCDF header value {} is not a valid URI.', potential_uri)
+            raise Exception(
+                'The skos_concept_uri netCDF header value {} is not a valid URI.', potential_uri)
 
         return True
 
@@ -99,7 +111,8 @@ class ConceptFetcher(object):
         """
         logger.debug('Dereferencing URI = %s', uri)
         # get the RDF for this concept by dereferencing the URI
-        # TODO: enable redirect following based on the status code (i.e. perhaps 303 & 302 but not 301 or whatever)
+        # TODO: enable redirect following based on the status code (i.e.
+        # perhaps 303 & 302 but not 301 or whatever)
         s = requests.Session()
         accepted_mime_types = ''
         for mimetype in self.VALID_MIMETYPES.iterkeys():
@@ -116,17 +129,18 @@ class ConceptFetcher(object):
     def get_rdflib_rdf_format(self, mimetype):
         logger.debug('RDF Format = %s', mimetype)
         if mimetype.split(';')[0] not in self.VALID_MIMETYPES:
-            raise Exception('%s does not represent a valid rdflib RDF format' % mimetype)
+            raise Exception(
+                '%s does not represent a valid rdflib RDF format' % mimetype)
         else:
             return self.VALID_MIMETYPES[mimetype.split(';')[0]]
 
     def parse_rdf(self, http_response):
         # this parsing will raise an rdflib error if the RDF is broken
         logger.debug('http_response.content = %s', http_response.content)
-        potential_rdf = StringIO(http_response.content)
         self.rdf_graph = rdflib.Graph().parse(
-            potential_rdf,
-            format=self.get_rdflib_rdf_format(http_response.headers.get('Content-Type'))
+            StringIO(http_response.content),
+            format=self.get_rdflib_rdf_format(
+                http_response.headers.get('Content-Type'))
         )
 
         logger.debug('graph = %s', self.rdf_graph)
@@ -139,8 +153,9 @@ class ConceptFetcher(object):
         :return: bool
         """
         self.setup_rdf_graph(uri)
-               
-        # is there a skos:Concept declaration for the URI and does it have a skos:prefLabel?
+
+        # is there a skos:Concept declaration for the URI and does it have a
+        # skos:prefLabel?
         q = '''
             PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
             ASK
@@ -153,7 +168,7 @@ class ConceptFetcher(object):
         logger.debug('valid_skos query = %s', q)
         qres = self.rdf_graph.query(q)
         logger.debug('valid_skos result = %s', list(qres))
-        
+
         return bool(qres)
 
     def get_prefLabel(self, uri, lang='en'):
@@ -164,10 +179,11 @@ class ConceptFetcher(object):
         :return: string lang
         """
         self.setup_rdf_graph(uri)
-            
+
         pl = None
-        if lang is None: lang = 'en'  # in case some absolute drongo sets the lang to None
-        
+        if lang is None:
+            lang = 'en'  # in case some absolute drongo sets the lang to None
+
         q = '''
             PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
             SELECT ?pl
@@ -179,17 +195,18 @@ class ConceptFetcher(object):
                 FILTER (lang(?pl) = "%(lang)s")
             }
         ''' % {'uri': uri, 'lang': lang}
-        
+
         logger.debug('get_prefLabel query = %s', q)
         qres = self.rdf_graph.query(q)
         logger.debug('get_prefLabel result = %s', list(qres))
-        
+
         for row in qres:
             pl = row['pl']
         if pl is not None:
             return str(pl), lang
         else:
-            raise Exception('Concept does not have a prefLabel in the language you chose ({0})'.format(lang))
+            raise Exception(
+                'Concept does not have a prefLabel in the language you chose ({0})'.format(lang))
 
     def get_altLabels(self, uri):
         """Get the comma separated list of altLabels for the given Concept URI
@@ -208,11 +225,11 @@ class ConceptFetcher(object):
                     skos:altLabel ?al .
             }
         ''' % {'uri': uri}
-        
+
         logger.debug('get_altLabels query = %s', q)
         qres = self.rdf_graph.query(q)
         logger.debug('get_altLabels result = %s', list(qres))
-        
+
         for row in qres:
             als.append(row['al'])
         if als is not None:
@@ -227,7 +244,7 @@ class ConceptFetcher(object):
         :return: string containing narrower concepts as a comma separated list
         """
         self.setup_rdf_graph(uri)
-            
+
         narrower = []
         q = '''
             PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
@@ -236,11 +253,11 @@ class ConceptFetcher(object):
                 <%(uri)s> skos:narrower+ ?n .
             }
         ''' % {'uri': uri}
-        
+
         logger.debug('get_narrower query = %s', q)
         qres = self.rdf_graph.query(q)
         logger.debug('get_narrower result = %s', list(qres))
-        
+
         for row in qres:
             narrower.append(row['n'])
         if narrower is not None:
@@ -255,7 +272,7 @@ class ConceptFetcher(object):
         :return: string containing broader concepts as a comma separated list
         """
         self.setup_rdf_graph(uri)
-            
+
         broader = []
         q = '''
             PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
@@ -264,11 +281,11 @@ class ConceptFetcher(object):
                 <%(uri)s> skos:broader+ ?b .
             }
         ''' % {'uri': uri}
-        
+
         logger.debug('get_broader query = %s', q)
         qres = self.rdf_graph.query(q)
         logger.debug('get_broader result = %s', list(qres))
-        
+
         for row in qres:
             broader.append(row['b'])
         if broader is not None:
@@ -288,43 +305,44 @@ class ConceptFetcher(object):
 
         if not self.valid_skos_concept_uri(uri):
             exit()
-            
+
         if not self.valid_skos(uri):
             exit()
 
         # get the prefLabel regardless of options set
-        prefLabel, lang = self.get_prefLabel(uri, lang=self.skos_params.get('lang'))
-        results = {'skos_prefLabel' + '_' + lang: prefLabel}
+        prefLabel, lang = self.get_prefLabel(
+            uri, lang=self.skos_params.get('lang'))
+        results = {'skos__prefLabel' + '_' + lang: prefLabel}
 
         # only get this if the arg altLabels=true
         if self.skos_params.get('altLabels'):
-            results['skos_altLabels'] = str(', '.join(self.get_altLabels(uri)))
+            results['skos__altLabels'] = str(', '.join(self.get_altLabels(uri)))
 
         # only get this if the arg narrower=true
         if self.skos_params.get('narrower'):
-            results['skos_narrower'] = str(', '.join(self.get_narrower(uri)))
+            results['skos__narrower'] = str(', '.join(self.get_narrower(uri)))
 
         # only get this if the arg broader=true
         if self.skos_params.get('broader'):
-            results['skos_broader'] = str(', '.join(self.get_broader(uri)))
+            results['skos__broader'] = str(', '.join(self.get_broader(uri)))
 
         self.local_cache_dict[uri] = results
-        
+
         return results
 
-    def get_debug(self): 
+    def get_debug(self):
         return self._debug
-    
-    def set_debug(self, value): 
+
+    def set_debug(self, value):
         self._debug = value
         if self._debug:
             logger.setLevel(logging.DEBUG)
         else:
             logger.setLevel(logging.INFO)
-        
+
     debug = property(get_debug, set_debug, doc='Boolean debug output flag')
-    
-    
+
+
 class CliValuesValidator:
     # the key values that we allow to formulate SKOS queries with
     keys = [
@@ -564,7 +582,6 @@ class CliValuesValidator:
             u"(?::\d{2,5})?"
             # resource path
             u"(?:/\S*)?"
-            u"$"
-            , re.UNICODE
+            u"$", re.UNICODE
         )
         return re.match(URI_REGEX, uri_candidate)

@@ -8,7 +8,6 @@ Created on 5Oct.,2016
 import unittest
 from pprint import pprint
 from ncskosdump import ld_functions  # ConceptFetcher, CliValuesValidator
-import requests
 
 SHOW_DEBUG_OUTPUT = False
 
@@ -25,17 +24,17 @@ INVALID_SKOS_PARAMS = {
     'narrower': 'False',
     'broader': True,
 }
-    
+
 TEST_URI = 'http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_temperature'
 INVALID_URI = 'This is not a URI'
 
 EXPECTED_RESULT = {
-    'skos_broader': '',
-    'skos_narrower': 'http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_skin_temperature, \
+    'skos__broader': '',
+    'skos__narrower': 'http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_skin_temperature, \
 http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_subskin_temperature, \
 http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/square_of_sea_surface_temperature',
-    'skos_prefLabel_pl': 'temperatura powierzchni morza',
-    'skos_altLabels': 'SST'
+    'skos__prefLabel_pl': 'temperatura powierzchni morza',
+    'skos__altLabels': 'SST'
 }
 
 VALID_MIMETYPES = {
@@ -49,52 +48,42 @@ VALID_MIMETYPES = {
 
 INVALID_MIMETYPE = 'nothing'
 
-
-class FAKE_HTTP_RESPONSE_VALID:
-    content = open('../../examples/tos.ttl').read()
-    headers = {'Content-Type': 'text/turtle'}
-
-
-class FAKE_HTTP_RESPONSE_INVALID:
-    content = '''This is not valid turtle'''
-    headers = {'Content-Type': 'text/turtle'}
-
-
-class FAKE_HTTP_RESPONSE_MIME_BAD:
-    content = '''This is not valid turtle'''
-    headers = {'Content-Type': 'text/plain'}
-
-
-concept_fetcher_object = None  # Shared instance so we only invoke the constructor once
+# Shared instance so we only invoke the constructor once
+concept_fetcher_object = None
 
 
 class TestCliValuesValidator(unittest.TestCase):
     """Unit tests for CliValuesValidator class"""
+
     def test_is_a_uri(self):
         """
         Perform test of CliValuesValidator.is_a_uri
         """
         print 'Testing CliValuesValidator.is_a_uri function'
-        assert ld_functions.CliValuesValidator.is_a_uri(TEST_URI), 'CliValuesValidator.is_a_uri() function failed'
+        assert ld_functions.CliValuesValidator.is_a_uri(
+            TEST_URI), 'CliValuesValidator.is_a_uri() function failed'
         assert not ld_functions.CliValuesValidator.is_a_uri(INVALID_URI), \
             'Negative CliValuesValidator.is_a_uri() function failed'
-        
-        
+
+
 class TestConceptFetcherConstructor(unittest.TestCase):
     """Unit tests for ConceptFetcher constructor - RUN THIS BEFORE ANY OTHER ConceptFetcher TESTS"""
+
     def test_constructor(self):
         """
         Perform test of constructor
         """
         print 'Testing ConceptFetcher constructor'
         global concept_fetcher_object
-        concept_fetcher_object = ld_functions.ConceptFetcher(TEST_SKOS_PARAMS, debug=SHOW_DEBUG_OUTPUT)
-        
+        concept_fetcher_object = ld_functions.ConceptFetcher(
+            TEST_SKOS_PARAMS, debug=SHOW_DEBUG_OUTPUT)
+
         assert concept_fetcher_object, 'NCLDDump constructor failed'
 
 
 class TestConceptFetcherLowLevel(unittest.TestCase):
     """Lowest-level unit tests for ConceptFetcher class"""
+
     def test_valid_command_line_args(self):
         print 'Testing valid_command_line_args function'
         global concept_fetcher_object
@@ -136,26 +125,11 @@ class TestConceptFetcherLowLevel(unittest.TestCase):
         global concept_fetcher_object
 
         for mimetype, rdf_format in VALID_MIMETYPES.items():
-            assert concept_fetcher_object.get_rdflib_rdf_format(mimetype + ';charset=utf-8') == rdf_format
+            assert concept_fetcher_object.get_rdflib_rdf_format(
+                mimetype + ';charset=utf-8') == rdf_format
         try:
             assert concept_fetcher_object.get_rdflib_rdf_format(INVALID_MIMETYPE) not in VALID_MIMETYPES.values(), \
                 'Failed negative get_rdflib_rdf_format test with "%s"' % INVALID_MIMETYPE
-        except:
-            pass
-
-    def test_parse_rdf(self):
-        print 'Testing test_parse_rdf function'
-        global concept_fetcher_object
-
-        assert concept_fetcher_object.parse_rdf(FAKE_HTTP_RESPONSE_VALID), 'Failed parse_skos test with static VALID input RDF'
-        try:
-            assert not concept_fetcher_object.parse_rdf(FAKE_HTTP_RESPONSE_INVALID), \
-                'Failed parse_skos test with static INVALID input RDF'
-        except:
-            pass
-        try:
-            assert not concept_fetcher_object.parse_rdf(FAKE_HTTP_RESPONSE_MIME_BAD), \
-                'Failed parse_skos test with bad mimetype (text/plain)'
         except:
             pass
 
@@ -163,11 +137,14 @@ class TestConceptFetcherLowLevel(unittest.TestCase):
         print 'Testing test_valid_skos function'
         global concept_fetcher_object
 
-        concept_fetcher_object.parse_rdf(concept_fetcher_object.dereference_uri(TEST_URI))  # Need self.g graph object
+        concept_fetcher_object.parse_rdf(
+            concept_fetcher_object.dereference_uri(TEST_URI))  # Need self.g graph object
 
-        assert concept_fetcher_object.valid_skos(TEST_URI), 'Failed valid_skos test with "%s"' % TEST_URI
+        assert concept_fetcher_object.valid_skos(
+            TEST_URI), 'Failed valid_skos test with "%s"' % TEST_URI
         try:
-            concept_fetcher_object.parse_rdf(concept_fetcher_object.dereference_uri(INVALID_URI))  # This will prob fail
+            concept_fetcher_object.parse_rdf(
+                concept_fetcher_object.dereference_uri(INVALID_URI))  # This will prob fail
             assert not concept_fetcher_object.valid_skos(INVALID_URI), \
                 'Failed negative valid_skos test with "%s"' % INVALID_URI
         except:
@@ -176,63 +153,74 @@ class TestConceptFetcherLowLevel(unittest.TestCase):
 
 class TestConceptFetcherMidLevel(unittest.TestCase):
     """Mid-level unit tests for ConceptFetcher class"""
+
     def test_get_prefLabel(self):
         print 'Testing get_prefLabel function'
         global concept_fetcher_object
-        
-        # Test default language: RResult should look something like ('sea surface temperature', 'en')
+
+        # Test default language: RResult should look something like ('sea
+        # surface temperature', 'en')
         get_prefLabel_result = concept_fetcher_object.get_prefLabel(TEST_URI)
         assert get_prefLabel_result[1] == 'en', \
-            'Default prefLabel language "%s" does not match "%s"' % (get_prefLabel_result[1], 'en')
+            'Default prefLabel language "%s" does not match "%s"' % (
+                get_prefLabel_result[1], 'en')
         assert get_prefLabel_result[0] == 'sea surface temperature', \
             'Failed default language get_prefLabel test with "%s"' % TEST_URI
-        
-        # Result should look something like ('temperatura powierzchni morza', 'pl')
-        get_prefLabel_result = concept_fetcher_object.get_prefLabel(TEST_URI, lang=TEST_SKOS_PARAMS['lang'])
+
+        # Result should look something like ('temperatura powierzchni morza',
+        # 'pl')
+        get_prefLabel_result = concept_fetcher_object.get_prefLabel(
+            TEST_URI, lang=TEST_SKOS_PARAMS['lang'])
         assert get_prefLabel_result[1] == TEST_SKOS_PARAMS['lang'], \
-            'prefLabel language "%s" does not match "%s"' % (get_prefLabel_result[1], TEST_SKOS_PARAMS['lang'])
-        assert get_prefLabel_result[0] == EXPECTED_RESULT['skos_prefLabel_%s' % get_prefLabel_result[1]], \
-            'Failed "%s" language get_prefLabel test with "%s"' % (TEST_SKOS_PARAMS['lang'], TEST_URI)
+            'prefLabel language "%s" does not match "%s"' % (
+                get_prefLabel_result[1], TEST_SKOS_PARAMS['lang'])
+        assert get_prefLabel_result[0] == EXPECTED_RESULT['skos__prefLabel_%s' % get_prefLabel_result[1]], \
+            'Failed "%s" language get_prefLabel test with "%s"' % (
+                TEST_SKOS_PARAMS['lang'], TEST_URI)
 
     def test_get_altLabels(self):
         print 'Testing get_altLabels function'
         global concept_fetcher_object
-        
-        get_altLabels_result = [str(altlabel) for altlabel in concept_fetcher_object.get_altLabels(TEST_URI)]
+
+        get_altLabels_result = [
+            str(altlabel) for altlabel in concept_fetcher_object.get_altLabels(TEST_URI)]
         assert sorted(get_altLabels_result) == [
-            item for item in sorted(EXPECTED_RESULT['skos_altLabels'].split(', ')) if item
+            item for item in sorted(EXPECTED_RESULT['skos__altLabels'].split(', ')) if item
         ]
 
     def test_get_narrower(self):
         print 'Testing get_narrower function'
         global concept_fetcher_object
-        
-        get_narrower_result = [str(altlabel) for altlabel in concept_fetcher_object.get_narrower(TEST_URI)]
+
+        get_narrower_result = [
+            str(altlabel) for altlabel in concept_fetcher_object.get_narrower(TEST_URI)]
         assert sorted(get_narrower_result) == [
-            item for item in sorted(EXPECTED_RESULT['skos_narrower'].split(', ')) if item
+            item for item in sorted(EXPECTED_RESULT['skos__narrower'].split(', ')) if item
         ]
 
     def test_get_broader(self):
         print 'Testing get_broader function'
         global concept_fetcher_object
-        
-        get_broader_result = [str(altlabel) for altlabel in concept_fetcher_object.get_broader(TEST_URI)]
+
+        get_broader_result = [
+            str(altlabel) for altlabel in concept_fetcher_object.get_broader(TEST_URI)]
         assert sorted(get_broader_result) == [
-            item for item in sorted(EXPECTED_RESULT['skos_broader'].split(', ')) if item
+            item for item in sorted(EXPECTED_RESULT['skos__broader'].split(', ')) if item
         ]
-    
-    
+
+
 class TestConceptFetcherSystem(unittest.TestCase):
     """Top-level unit test for ConceptFetcher class"""
+
     def test_get_results(self):
         print 'Testing get_results function'
         global concept_fetcher_object
 
         result_dict = concept_fetcher_object.get_results(TEST_URI)
         if SHOW_DEBUG_OUTPUT:
-            print 'Result for %s:' % TEST_URI 
+            print 'Result for %s:' % TEST_URI
             pprint(result_dict)
-            
+
         assert result_dict == EXPECTED_RESULT, 'Failed get_results test with "%s"' % TEST_URI
 
 
@@ -261,6 +249,6 @@ def test_suite():
 # Define main function
 def main():
     unittest.TextTestRunner(verbosity=4).run(test_suite())
-    
+
 if __name__ == '__main__':
     main()
