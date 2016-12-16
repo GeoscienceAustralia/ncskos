@@ -29,7 +29,7 @@ TEST_URI = 'http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_te
 INVALID_URI = 'This is not a URI'
 
 EXPECTED_RESULT = {
-    'skos__broader': '',
+    'skos__broader': 'http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/surface_temperature',
     'skos__narrower': 'http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_skin_temperature, \
 http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_subskin_temperature, \
 http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/square_of_sea_surface_temperature',
