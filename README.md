@@ -36,7 +36,7 @@ with:
 	
 XML output (via the -x ncdump option) is also supported. For example:
 
-	ncskosdump -x ~/workspace/ncskosdump/data/sst.ltm.1971-2000_skos.nc --skos lang=pl altLabels=True narrower=True broader=True
+	ncskosdump -x ~/workspace/ncskosdump/data/sst.ltm.1999-2000_skos.nc --skos lang=pl altLabels=True narrower=True broader=True
 
 will replace the following XML element:
 
