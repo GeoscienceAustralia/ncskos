@@ -11,24 +11,26 @@ from ncskosdump import NcSKOSDump
 
 SHOW_DEBUG_OUTPUT = False
 
-# Test file in the same directory as this script
-TEST_NC_PATH = 'sst.ltm.2000_skos.nc'
 SKOS_OPTION_LIST = ['--skos', 'lang=pl',
                     'altLabels=True', 'narrower=True', 'broader=True']
 SKOS_OPTION_DICT = {'lang': 'pl', 'altLabels': True,
                     'narrower': True, 'broader': True}
 
+# Directory containing this script
 TEST_DIR = os.path.abspath(os.path.dirname(__file__))
+# Test file in the data directory adjacent to the test directory
+DATA_DIR = os.path.join(os.path.dirname(TEST_DIR), 'data')
+TEST_NC_PATH = os.path.join(DATA_DIR, 'sst.ltm.1999-2000_skos_sea_surface_temperature.nc')
 
-TEST_ARGS = {'CDL': ['-hs', os.path.join(TEST_DIR, TEST_NC_PATH)] + SKOS_OPTION_LIST,
-             'XML': ['-x', os.path.join(TEST_DIR, TEST_NC_PATH)] + SKOS_OPTION_LIST}
+TEST_ARGS = {'CDL': ['-hs', TEST_NC_PATH] + SKOS_OPTION_LIST,
+             'XML': ['-x', TEST_NC_PATH] + SKOS_OPTION_LIST}
 
 # Test different permutations of arguments
 TEST_ARG_PERMUTATIONS = [
-    SKOS_OPTION_LIST + ['-hs', os.path.join(TEST_DIR, TEST_NC_PATH)],
-    SKOS_OPTION_LIST + [os.path.join(TEST_DIR, TEST_NC_PATH), '-hs'],
-    ['-hs'] + SKOS_OPTION_LIST + [os.path.join(TEST_DIR, TEST_NC_PATH)],
-    [os.path.join(TEST_DIR, TEST_NC_PATH)] + SKOS_OPTION_LIST + ['-hs'],
+    SKOS_OPTION_LIST + ['-hs', TEST_NC_PATH],
+    SKOS_OPTION_LIST + [TEST_NC_PATH, '-hs'],
+    ['-hs'] + SKOS_OPTION_LIST + [TEST_NC_PATH],
+    [TEST_NC_PATH] + SKOS_OPTION_LIST + ['-hs'],
 ]
 
 nclddump_object = None  # Shared instance so we only invoke the constructor once
