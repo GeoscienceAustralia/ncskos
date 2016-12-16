@@ -126,24 +126,32 @@ class ConceptFetcher(object):
         logger.debug('RDF Data = %s', r)
         return r
 
-    def get_rdflib_rdf_format(self, mimetype):
-        logger.debug('RDF Format = %s', mimetype)
-        if mimetype.split(';')[0] not in self.VALID_MIMETYPES:
+    def get_rdflib_rdf_format(self, content_type_header):
+        """
+        Gets the rdflib RDF format relevant for a requests response object
+        :param requests_response: a requests module response object
+        :return: string, one of rdflib's RDF formats
+        """
+        logger.debug('RDF Format = %s', content_type_header)
+        if content_type_header.split(';')[0] not in self.VALID_MIMETYPES:
             raise Exception(
-                '%s does not represent a valid rdflib RDF format' % mimetype)
+                '%s does not represent a valid rdflib RDF format' % content_type_header)
         else:
-            return self.VALID_MIMETYPES[mimetype.split(';')[0]]
+            return self.VALID_MIMETYPES[content_type_header.split(';')[0]]
 
     def parse_rdf(self, http_response):
         # this parsing will raise an rdflib error if the RDF is broken
         logger.debug('http_response.content = %s', http_response.content)
-        self.rdf_graph = rdflib.Graph().parse(
+        self.rdf_graph = self.parse_rdf_return(http_response)
+        logger.debug('graph = %s', self.rdf_graph)
+
+    def parse_rdf_return(self, http_response):
+        # this parsing will raise an rdflib error if the RDF is broken
+        return rdflib.Graph().parse(
             StringIO(http_response.content),
             format=self.get_rdflib_rdf_format(
                 http_response.headers.get('Content-Type'))
         )
-
-        logger.debug('graph = %s', self.rdf_graph)
 
     def valid_skos(self, uri):
         """Here we are NOT validating SKOS per se, we are only validating the minimum requirement for a Concept label
@@ -250,7 +258,9 @@ class ConceptFetcher(object):
             PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
             SELECT ?n
             WHERE {
-                <%(uri)s> skos:narrower+ ?n .
+                { <%(uri)s> skos:narrower ?n . }
+                UNION
+                { ?n skos:broader <%(uri)s> . }
             }
         ''' % {'uri': uri}
 
@@ -278,7 +288,9 @@ class ConceptFetcher(object):
             PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
             SELECT ?b
             WHERE {
-                <%(uri)s> skos:broader+ ?b .
+                { <%(uri)s> skos:broader ?b . }
+                UNION
+                { ?b skos:narrower <%(uri)s> . }
             }
         ''' % {'uri': uri}
 
