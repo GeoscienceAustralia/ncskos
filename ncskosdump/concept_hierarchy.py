@@ -40,11 +40,7 @@ class ConceptHierarchy(object):
             concept[key] = [self.get_concept(uri.strip()) for uri in uri_list.split(',') if uri]
 
         ConceptHierarchy.concept_registry[concept_uri] = concept
-        
-        # Hack to fix up missing broader concepts by inferring them from narrower concepts
-        for narrower_concept in concept['narrower']:
-            narrower_concept['broader'].append(concept)
-        
+
         return concept
     
     def get_top_concepts(self):
@@ -60,9 +56,10 @@ class ConceptHierarchy(object):
 
     def print_concept_tree(self, concept, level=0):
         """Recursive function to print indented concept subtree"""
-        print '\t' * level + concept['prefLabel']
-        for narrower_concept in concept['narrower']:
-            self.print_concept_tree(narrower_concept, level+1)
+        if concept is not None:
+            print '\t' * level + concept['prefLabel']
+            for narrower_concept in concept['narrower']:
+                self.print_concept_tree(narrower_concept, level+1)
 
 
 def main():
