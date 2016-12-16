@@ -40,7 +40,8 @@ class ConceptHierarchy(object):
         
         # Hack to fix up missing broader concepts by inferring them from narrower concepts
         for narrower_concept in concept['narrower']:
-            narrower_concept['broader'].append(concept)
+            if concept not in narrower_concept['broader']:
+                narrower_concept['broader'].append(concept)
         
         return concept
     
