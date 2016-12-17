@@ -8,8 +8,8 @@ from ncskosdump.ld_functions import ConceptFetcher
 
 class ConceptHierarchy(object):
     """Class to track broader/narrower heirarchy of concepts"""
-    # Always ask for narrower, broader and altlabels - only lang is optional
-    skos_option_dict = {'altLabels': True, 'narrower': True, 'broader': True}
+    # Always ask for narrower, broader and altlabels
+    skos_option_dict = {'altLabels': True, 'narrower': False, 'broader': True}
     concept_fetcher = ConceptFetcher(skos_option_dict)
     
     concept_registry = {}
@@ -34,11 +34,20 @@ class ConceptHierarchy(object):
             'altLabels': [alt_label.strip() for alt_label in concept_results['skos__altLabels'].split(',') if alt_label]
         }
                                    
-        for key, uri_list in {'narrower': concept_results.get('skos__narrower') or '', 
-                              'broader': concept_results.get('skos__broader') or ''
-                              }.iteritems():
-            concept[key] = [self.get_concept(uri.strip()) for uri in uri_list.split(',') if uri]
+        #=======================================================================
+        # for key, uri_list in {'narrower': concept_results.get('skos__narrower') or '', 
+        #                       'broader': concept_results.get('skos__broader') or ''
+        #                       }.iteritems():
+        #     concept[key] = [self.get_concept(uri.strip()) for uri in uri_list.split(',') if uri]
+        #=======================================================================
+        concept['broader'] = [self.get_concept(uri.strip()) for uri in (concept_results.get('skos__broader') or '').split(',') if uri]
+        concept['narrower'] = [] # Don't search for narrower concepts
 
+        # Update narrower list in broader concept(s) as required
+        for broader_concept in concept['broader']:
+            if concept not in broader_concept['narrower']:
+                broader_concept['narrower'].append(concept)
+        
         ConceptHierarchy.concept_registry[concept_uri] = concept
 
         return concept
