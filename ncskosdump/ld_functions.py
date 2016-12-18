@@ -325,10 +325,12 @@ class ConceptFetcher(object):
         try:
             prefLabel, lang = self.get_prefLabel(
                 uri, lang=self.skos_params.get('lang'))
-        except: # Fall back to English
+        except Exception as e: # Fall back to English
             if self.skos_params.get('lang') != 'en':
                 prefLabel, lang = self.get_prefLabel(
                     uri, lang='en')
+            else:
+                raise e
                 
         results = {'skos__prefLabel' + '_' + lang: prefLabel}
 
