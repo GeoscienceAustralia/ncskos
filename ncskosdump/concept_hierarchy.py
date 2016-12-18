@@ -8,30 +8,29 @@ from ncskosdump.ld_functions import ConceptFetcher
 
 class ConceptHierarchy(object):
     """Class to track broader/narrower heirarchy of concepts"""
-    # Always ask for narrower, broader and altlabels
-    skos_option_dict = {'altLabels': True, 'narrower': False, 'broader': True}
-    concept_fetcher = ConceptFetcher(skos_option_dict)
-    
-    concept_registry = {}
-    
+    # Always ask for broader and altlabels
     def get_concept(self, concept_uri):
         """Recursive function to return dict containing altLabels and lists of broader and narrower concepts
         for the specified concept_uri"""
         
-        concept = ConceptHierarchy.concept_registry.get(concept_uri)  # Check registry to see if we already have it
+        concept = self.concept_registry.get(concept_uri)  # Check registry to see if we already have it
         
         if concept:
             return concept
         
         try:
-            concept_results = ConceptHierarchy.concept_fetcher.get_results(concept_uri)  # Look up URI
-        except:
+            concept_results = self.concept_fetcher.get_results(concept_uri)  # Look up URI
+        except Exception as e:
+            print 'WARNING: Unable to resolve URI %s: %s' % (concept_uri, e.message)
             return None
         
         concept = {
-            'prefLabel': concept_results['skos__prefLabel_en'],
+            'prefLabel': (concept_results.get('skos__prefLabel_' + self.lang) or 
+                          concept_results.get('skos__prefLabel_en')),
             'uri': concept_uri,
-            'altLabels': [alt_label.strip() for alt_label in concept_results['skos__altLabels'].split(',') if alt_label]
+            'altLabels': [alt_label.strip() 
+                          for alt_label in concept_results['skos__altLabels'].split(',') 
+                          if alt_label]
         }
                                    
         #=======================================================================
@@ -48,18 +47,29 @@ class ConceptHierarchy(object):
             if concept not in broader_concept['narrower']:
                 broader_concept['narrower'].append(concept)
         
-        ConceptHierarchy.concept_registry[concept_uri] = concept
+        self.concept_registry[concept_uri] = concept
 
         return concept
     
     def get_top_concepts(self):
-        return [concept for concept in ConceptHierarchy.concept_registry.values() if not concept['broader']]
+        return [concept for concept in self.concept_registry.values() if not concept['broader']]
     
     def get_bottom_concepts(self):
-        return [concept for concept in ConceptHierarchy.concept_registry.values() if not concept['narrower']]
+        return [concept for concept in self.concept_registry.values() if not concept['narrower']]
     
-    def __init__(self, initial_concept_uri=None):
+    def __init__(self, initial_concept_uri=None, lang=None):
         """Constructor"""
+        self.lang = lang or 'en'
+        
+        skos_option_dict = {'altLabels': True, 
+                            'narrower': False, 
+                            'broader': True,
+                            'lang': lang
+                            }           
+        self.concept_fetcher = ConceptFetcher(skos_option_dict)
+        
+        self.concept_registry = {}
+    
         if initial_concept_uri:
             self.get_concept(initial_concept_uri)  # Build tree around initial URI
 

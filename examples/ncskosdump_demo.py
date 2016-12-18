@@ -21,17 +21,27 @@ def main():
         for narrower_concept in concept['narrower']:
             print_concept_tree(narrower_concept, dataset_var_concept_dict, level+1)
 
-    concept_hierarchy = ConceptHierarchy()   
-     
-    if len(sys.argv) == 2:
-        data_dir = sys.argv[1]
-    else:
-        data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')
+    arg_value = {}
+    if len(sys.argv) > 1:
+        for arg in sys.argv[1:]:
+            key_value = [element.strip() for element in arg.split('=')]
+            if len(key_value) == 1:
+                key_value = ['dataset_dir', key_value[0]]
+                             
+            arg_value[key_value[0]] = key_value[1]
         
-    nc_path_list = sorted(glob(os.path.join(data_dir, '*.nc')))
+    # Default to project "data" directory
+    data_dir = (arg_value.get('dataset_dir') or 
+                os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')
+                )
     
+    concept_hierarchy = ConceptHierarchy(lang=arg_value.get('lang'))   
+     
+    nc_path_list = sorted(glob(os.path.join(data_dir, '*.nc')))
+    print nc_path_list
     dataset_var_concept_dict = {}
     for nc_path in nc_path_list:
+        print nc_path
         nc_dataset = netCDF4.Dataset(nc_path, 'r')
         
         data_variable_names = [variable_name for variable_name in nc_dataset.variables.keys() if len(nc_dataset.variables[variable_name].dimensions) > 1]
