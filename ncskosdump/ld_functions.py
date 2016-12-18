@@ -322,8 +322,14 @@ class ConceptFetcher(object):
             exit()
 
         # get the prefLabel regardless of options set
-        prefLabel, lang = self.get_prefLabel(
-            uri, lang=self.skos_params.get('lang'))
+        try:
+            prefLabel, lang = self.get_prefLabel(
+                uri, lang=self.skos_params.get('lang'))
+        except: # Fall back to English
+            if self.skos_params.get('lang') != 'en':
+                prefLabel, lang = self.get_prefLabel(
+                    uri, lang='en')
+                
         results = {'skos__prefLabel' + '_' + lang: prefLabel}
 
         # only get this if the arg altLabels=true

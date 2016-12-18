@@ -13,6 +13,9 @@ class ConceptHierarchy(object):
         """Recursive function to return dict containing altLabels and lists of broader and narrower concepts
         for the specified concept_uri"""
         
+        if not concept_uri:
+            return None
+        
         concept = self.concept_registry.get(concept_uri)  # Check registry to see if we already have it
         
         if concept:
