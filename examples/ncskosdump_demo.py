@@ -38,10 +38,9 @@ def main():
     concept_hierarchy = ConceptHierarchy(lang=arg_value.get('lang'))   
      
     nc_path_list = sorted(glob(os.path.join(data_dir, '*.nc')))
-    print nc_path_list
+
     dataset_var_concept_dict = {}
     for nc_path in nc_path_list:
-        print nc_path
         nc_dataset = netCDF4.Dataset(nc_path, 'r')
         
         data_variable_names = [variable_name for variable_name in nc_dataset.variables.keys() if len(nc_dataset.variables[variable_name].dimensions) > 1]
