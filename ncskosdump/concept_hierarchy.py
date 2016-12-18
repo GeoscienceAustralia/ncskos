@@ -26,7 +26,7 @@ class ConceptHierarchy(object):
         
         concept = {
             'prefLabel': (concept_results.get('skos__prefLabel_' + self.lang) or 
-                          concept_results.get('skos__prefLabel_en')),
+                          concept_results.get('skos__prefLabel_en') + ' (English)'),
             'uri': concept_uri,
             'altLabels': [alt_label.strip() 
                           for alt_label in concept_results['skos__altLabels'].split(',') 
