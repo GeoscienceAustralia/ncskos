@@ -14,8 +14,8 @@ class ConceptHierarchy(object):
     def get_concept(self, concept_uri):
         """
         Recursive function to return dict containing altLabels and lists of broader and narrower concepts
-        for the specified concept_uri. Note that "broader" concepts are searched recursively t the top concept, 
-        while "narrower" concepts are updated as required.
+        for the specified concept_uri. Note that "broader" concepts are searched recursively up to the top concept, 
+        while "narrower" concepts are only updated as required as narrower concept URIs are encountered.
         Unresolved URIs will have an artificial top-level concept created.
         :param concept_uri: URI for concept.
         :return dict containing information for concept read from cache or from SKOS query
