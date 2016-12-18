@@ -58,8 +58,9 @@ def main():
     print '=' * 80 + '\n'
     for top_concept in [concept for concept in concept_hierarchy.get_top_concepts()]:
         print_concept_tree(top_concept, dataset_var_concept_dict)
+        print
         
-    print '\nUncategorised'
+    print 'Uncategorised'
     for dataset_variable in [dataset_variable
                               for dataset_variable in dataset_var_concept_dict.keys() 
                               if not dataset_var_concept_dict[dataset_variable]]:
