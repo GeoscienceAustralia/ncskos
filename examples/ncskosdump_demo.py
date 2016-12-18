@@ -68,9 +68,9 @@ def main():
         print
         
     print 'Uncategorised'
-    for dataset_variable in [dataset_variable
+    for dataset_variable in sorted([dataset_variable
                               for dataset_variable in dataset_var_concept_dict.keys() 
-                              if not dataset_var_concept_dict[dataset_variable]]:
+                              if not dataset_var_concept_dict[dataset_variable]]):
         print '  ' + ':'.join([str(item) for item in dataset_variable])
 
 if __name__ == '__main__':
