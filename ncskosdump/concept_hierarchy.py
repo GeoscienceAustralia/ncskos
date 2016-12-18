@@ -8,11 +8,19 @@ from ncskosdump.ld_functions import ConceptFetcher
 
 
 class ConceptHierarchy(object):
-    """Class to track broader/narrower heirarchy of concepts"""
-    # Always ask for broader and altlabels
+    """
+    Class to track broader/narrower heirarchy of concepts
+    """
     def get_concept(self, concept_uri):
-        """Recursive function to return dict containing altLabels and lists of broader and narrower concepts
-        for the specified concept_uri"""
+        """
+        Recursive function to return dict containing altLabels and lists of broader and narrower concepts
+        for the specified concept_uri. Note that "broader" concepts are searched recursively t the top concept, 
+        while "narrower" concepts are updated as required.
+        Unresolved URIs will have an artificial top-level concept created.
+        :param concept_uri: URI for concept.
+        :return dict containing information for concept read from cache or from SKOS query
+            dict keys are: ['prefLabel', 'uri', 'altLabels', 'broader', 'narrower']
+        """
         
         if not concept_uri:
             return None
@@ -67,13 +75,24 @@ class ConceptHierarchy(object):
         return concept
     
     def get_top_concepts(self):
+        '''
+        Function to return concepts without any "broader" concepts
+        '''
         return [concept for concept in self.concept_registry.values() if not concept['broader']]
     
     def get_bottom_concepts(self):
+        '''
+        Function to return concepts without any "narrower" concepts recorded. 
+        Note: Narrower concepts may exist in vocab, but will only be recorded if their URI is resolved
+        '''
         return [concept for concept in self.concept_registry.values() if not concept['narrower']]
     
     def __init__(self, initial_concept_uri=None, lang=None):
-        """Constructor"""
+        """
+        Constructor for class ConceptHierarchy
+        :param initial_concept_uri: Optional initial URI from which to obtain "broader" concepts to build initial (linear) tree
+        :param lang: Optional two-character ISO 639-1:200 language code. Defaults to 'en'
+        """
         self.lang = lang or 'en'
         
         skos_option_dict = {'altLabels': True, 
@@ -97,6 +116,9 @@ class ConceptHierarchy(object):
 
 
 def main():
+    '''
+    Main function for quick-and-dirty testing. May be removed later
+    '''
     concept_hierarchy = ConceptHierarchy(
         'http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_temperature'
     )

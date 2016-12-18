@@ -11,6 +11,12 @@ import netCDF4
 from ncskosdump.concept_hierarchy import ConceptHierarchy
 
 def main():
+    '''
+    Function to read concept URIs from all data variables in all netCDF files in dataset directory and
+    display them in a concept hierarchy.
+    Note that language can be specified using command line argument "lang=<lang_code>"
+    Dataset directory defaults to project "data" directory adjacent to directory containing this script
+    '''
     def print_concept_tree(concept, dataset_var_concept_dict, level=0):
         '''Recursive function to print indented concept subtree'''
         print '\t' * level + concept['prefLabel']
@@ -21,6 +27,7 @@ def main():
         for narrower_concept in concept['narrower']:
             print_concept_tree(narrower_concept, dataset_var_concept_dict, level+1)
 
+    # Resolve "<key>=<value>" arguments. Assume key-only argument is dataset directory
     arg_value = {}
     if len(sys.argv) > 1:
         for arg in sys.argv[1:]:
