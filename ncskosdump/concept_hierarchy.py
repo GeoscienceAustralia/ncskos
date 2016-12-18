@@ -61,11 +61,11 @@ class ConceptHierarchy(object):
                     broader_concept['narrower'].append(concept)
         
         else: # Create "fake" (orphan & childless) concept for unresolved URIs
-            basename = os.path.basename(concept_uri)
+            label = 'Unresolved URI ' + os.path.basename(concept_uri)
             concept = {
-                'prefLabel': basename,
+                'prefLabel': label,
                 'uri': concept_uri,
-                'altLabels': [basename,],
+                'altLabels': [label,],
                 'broader':[],
                 'narrower': []
                 }

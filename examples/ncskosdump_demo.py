@@ -67,7 +67,7 @@ def main():
         print_concept_tree(top_concept, dataset_var_concept_dict)
         print
         
-    print 'Uncategorised'
+    print 'Uncategorised (Missing URI)'
     for dataset_variable in sorted([dataset_variable
                               for dataset_variable in dataset_var_concept_dict.keys() 
                               if not dataset_var_concept_dict[dataset_variable]]):
