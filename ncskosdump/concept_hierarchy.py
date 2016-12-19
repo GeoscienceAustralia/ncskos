@@ -87,20 +87,20 @@ class ConceptHierarchy(object):
     
     def get_top_concepts(self):
         '''
-        Function to return concepts without any "broader" concepts
+        Function to return list of concepts without any "broader" concepts
         '''
         return [concept for concept in self.concept_registry.values() if not concept['broader']]
     
     def get_bottom_concepts(self):
         '''
-        Function to return concepts without any "narrower" concepts recorded. 
+        Function to return list of concepts without any "narrower" concepts recorded. 
         Note: Narrower concepts may exist in vocab, but will only be recorded if their URI is resolved
         '''
         return [concept for concept in self.concept_registry.values() if not concept['narrower']]
     
     def get_concept_by_altlabel(self, altlabel):
         '''
-        Function to return concepts with matching altLabel (case insensitive match). 
+        Function to return list of concepts with matching altLabel (case insensitive match). 
         '''
         return [concept for concept in self.concept_registry.values() 
                 if altlabel.lower() in [concept_altlabel.lower() 
@@ -109,13 +109,14 @@ class ConceptHierarchy(object):
     
     def get_related_concepts(self, concept, relationship='narrower'):
         '''
-        Recursive function to return all narrower or broader concepts for specified concept. 
+        Recursive function to return list of all narrower or broader concepts for specified concept. 
         '''
         assert (relationship == 'narrower') or (relationship == 'broader'), 'relationship must be either "narrower" or "broader"'
-        narrower_concepts = list(concept[relationship])
-        for narrower_concept in concept[relationship]:
-            narrower_concepts += self.get_related_concepts(narrower_concept, relationship)                         
-        return narrower_concepts
+        related_concepts = list(concept[relationship])
+        for related_concept in concept[relationship]:
+            related_concepts += self.get_related_concepts(related_concept, relationship)                         
+        return related_concepts
+    
     
     def __init__(self, initial_concept_uri=None, lang=None, broader=True, narrower=False, verbose=False):
         """
