@@ -68,7 +68,7 @@ def main():
 
     # Create ConceptHierarchy to build concept trees from URIs in targets
     concept_hierarchy = ConceptHierarchy(lang=arg_value_dict.get('lang'), 
-                                         broader=True,
+                                         broader=True, # Always resolve broader to top concepts
                                          narrower=arg_value_dict.get('narrower'),
                                          verbose=arg_value_dict.get('verbose')
                                          )   
