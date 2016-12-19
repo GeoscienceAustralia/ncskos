@@ -143,7 +143,8 @@ def main():
                                                         if dataset_var_concept_dict[dataset_variable] == narrower_concept]):
                             print '\t' + ':'.join([str(item) for item in dataset_variable])
         else:
-            print '\nNo concepts found for altLabel "%s"' % altlabel
+            print '\nNo concepts found with altLabel "%s"' % altlabel
+
             
 if __name__ == '__main__':
     main()
