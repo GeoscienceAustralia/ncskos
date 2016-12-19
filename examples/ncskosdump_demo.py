@@ -37,7 +37,7 @@ def main():
     if len(sys.argv) > 1:
         for arg in sys.argv[1:]:
             if arg[0] == '-': # Leading ' ' indicates command line switch
-                key_value = [element.strip() for element in re.sub('-+', '', arg).split('=')]
+                key_value = [element.strip() for element in re.sub('^-+', '', arg).split('=')]
                 if len(key_value) == 1:
                     key_value = [key_value[0], True] # unary argument
                                  
