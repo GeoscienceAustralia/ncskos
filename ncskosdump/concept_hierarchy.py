@@ -32,59 +32,57 @@ class ConceptHierarchy(object):
                 print 'Found concept in cache for URI %s' % concept_uri
             return concept
         
-        try:
-            if self.verbose:
-                print 'Resolving concept_uri = %s' % concept_uri
+        if self.verbose:
+            print 'Resolving concept_uri = %s' % concept_uri
         
+        try:
             concept_results = self.concept_fetcher.get_results(concept_uri)  # Look up URI
         except Exception as e:
             print 'WARNING: Unable to resolve URI %s: %s' % (concept_uri, e.message)
-            concept_results = None
             
-        if concept_results:
-            concept = {
-                'prefLabel': (concept_results.get('skos__prefLabel_' + self.lang) or 
-                              concept_results.get('skos__prefLabel_en') + ' (English)'),
-                'uri': concept_uri,
-                'altLabels': [alt_label.strip() 
-                              for alt_label in concept_results['skos__altLabels'].split(',') 
-                              if alt_label],
-                'broader': [],
-                'narrower': []
-            }
-                
-            self.concept_registry[concept_uri] = concept
-            
-            # Recursively populate narrower & broader lists if required
-            if self.broader:
-                concept['broader'] += [self.get_concept(uri.strip()) for uri in (concept_results.get('skos__broader') or '').split(',') if uri]
-                
-                if not self.narrower:  # Update narrower list in broader concept(s) as required
-                    for broader_concept in concept['broader']:
-                        if concept not in broader_concept['narrower']:
-                            broader_concept['narrower'].append(concept)
-                 
-            if self.narrower:
-                concept['narrower'] += [self.get_concept(uri.strip()) for uri in (concept_results.get('skos__narrower') or '').split(',') if uri]
-
-                if not self.broader: # Update broader list in narrower concept(s) as required
-                    for narrower_concept in concept['narrower']:
-                        if concept not in narrower_concept['broader']:
-                            narrower_concept['broader'].append(concept)
-                                
-        else: # Create "fake" (orphan & childless) concept for unresolved URIs
+            # Create "fake" concept object with no broader/narrower concepts
             label = 'Unresolved URI ' + os.path.basename(concept_uri)
-            concept = {
-                'prefLabel': label,
-                'uri': concept_uri,
-                'altLabels': [label,],
-                'broader':[],
-                'narrower': []
-                }
+            concept = {'prefLabel': label,
+                       'uri': concept_uri,
+                       'altLabels': [label,],
+                       'broader':[],
+                       'narrower': []
+                       }
             
             self.concept_registry[concept_uri] = concept
             
+            return concept 
             
+        concept = {'prefLabel': (concept_results.get('skos__prefLabel_' + self.lang) or 
+                                 concept_results.get('skos__prefLabel_en') + ' (English)'
+                                 ),
+                   'uri': concept_uri,
+                   'altLabels': [alt_label.strip() 
+                                 for alt_label in concept_results['skos__altLabels'].split(',') 
+                                 if alt_label],
+                   'broader': [],
+                   'narrower': []
+                   }
+            
+        self.concept_registry[concept_uri] = concept
+        
+        # Recursively populate narrower & broader lists if required
+        if self.broader:
+            concept['broader'] += [self.get_concept(uri.strip()) for uri in (concept_results.get('skos__broader') or '').split(',') if uri]
+            
+            if not self.narrower:  # Update narrower list in broader concept(s) as required
+                for broader_concept in concept['broader']:
+                    if concept not in broader_concept['narrower']:
+                        broader_concept['narrower'].append(concept)
+             
+        if self.narrower:
+            concept['narrower'] += [self.get_concept(uri.strip()) for uri in (concept_results.get('skos__narrower') or '').split(',') if uri]
+
+            if not self.broader: # Update broader list in narrower concept(s) as required
+                for narrower_concept in concept['narrower']:
+                    if concept not in narrower_concept['broader']:
+                        narrower_concept['broader'].append(concept)
+                            
         return concept
     
     def get_top_concepts(self):
