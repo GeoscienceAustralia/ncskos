@@ -161,7 +161,8 @@ def main():
     Main function for quick-and-dirty testing. May be removed later
     '''
     concept_hierarchy = ConceptHierarchy(
-        'http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_temperature'
+        'http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_temperature',
+        narrower=True
     )
 
     for top_concept in [concept for concept in concept_hierarchy.get_top_concepts()]:
