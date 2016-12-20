@@ -11,7 +11,7 @@ class ConceptHierarchy(object):
     """
     Class to track broader/narrower heirarchy of concepts
     """
-    def get_concept(self, concept_uri):
+    def get_concept_from_uri(self, concept_uri):
         """
         Recursive function to return dict containing altLabels and lists of broader and narrower concepts
         for the specified concept_uri. Note that "broader" concepts are searched recursively up to the top concept, 
@@ -68,7 +68,7 @@ class ConceptHierarchy(object):
         
         # Recursively populate narrower & broader lists if required
         if self.broader:
-            concept['broader'] += [self.get_concept(uri.strip()) for uri in (concept_results.get('skos__broader') or '').split(',') if uri]
+            concept['broader'] += [self.get_concept_from_uri(uri.strip()) for uri in (concept_results.get('skos__broader') or '').split(',') if uri]
             
             if not self.narrower:  # Update narrower list in broader concept(s) as required
                 for broader_concept in concept['broader']:
@@ -76,7 +76,7 @@ class ConceptHierarchy(object):
                         broader_concept['narrower'].append(concept)
              
         if self.narrower:
-            concept['narrower'] += [self.get_concept(uri.strip()) for uri in (concept_results.get('skos__narrower') or '').split(',') if uri]
+            concept['narrower'] += [self.get_concept_from_uri(uri.strip()) for uri in (concept_results.get('skos__narrower') or '').split(',') if uri]
 
             if not self.broader: # Update broader list in narrower concept(s) as required
                 for narrower_concept in concept['narrower']:
@@ -146,7 +146,7 @@ class ConceptHierarchy(object):
         self.concept_registry = {}
     
         if initial_concept_uri:
-            self.get_concept(initial_concept_uri)  # Build tree around initial URI
+            self.get_concept_from_uri(initial_concept_uri)  # Build tree around initial URI
 
     def print_concept_tree(self, concept, level=0):
         """Recursive function to print indented concept subtree"""
