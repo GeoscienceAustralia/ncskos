@@ -152,22 +152,38 @@ class ConceptHierarchy(object):
             self.get_concept_from_uri(initial_concept_uri)  # Build tree around initial URI
 
     def print_concept_tree(self, concept, level=0):
-        """Recursive function to print indented concept subtree"""
+        '''
+        Recursive function to print indented concept subtree
+        '''
         if concept is not None:
             print '\t' * level + concept['prefLabel']
             for narrower_concept in concept['narrower']:
                 self.print_concept_tree(narrower_concept, level+1)
 
     def get_unresolved_concepts(self):
+        '''
+        Function to return a list of all unresolved concepts
+        '''
         return [concept for concept in self.concept_registry.values() 
                 if concept['unresolved']
                 ]
 
     def retry_unresolved_uris(self):
+        '''
+        Function to try to retry failed web queries and update all unresolved URIs
+        '''
         for unresolved_concept in self.get_unresolved_concepts():
             self.get_concept_from_uri(unresolved_concept['uri'], refresh_cache=True)
             
-        
+     
+    def get_sibling_concepts(self, concept):
+        '''
+        Function to return all sibling concepts (narrower concepts of broader concepts)
+        '''
+        sibling_concept_list = []
+        for broader_concept in concept['broader']: # Allow for multiple "broader" concepts
+            sibling_concept_list += broader_concept['narrower']
+        return sibling_concept_list
         
 def main():
     '''
@@ -175,7 +191,7 @@ def main():
     '''
     concept_hierarchy = ConceptHierarchy(
         'http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_temperature',
-        narrower=True
+        narrower=True # Build complete hierarchy from top to bottom
     )
 
     for top_concept in [concept for concept in concept_hierarchy.get_top_concepts()]:
