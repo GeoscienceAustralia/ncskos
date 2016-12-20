@@ -8,13 +8,13 @@ import netCDF4
 
 from ncskosdump.concept_hierarchy import ConceptHierarchy
 
-class NCConcept(ConceptHierarchy):
+class NCConceptHierarchy(ConceptHierarchy):
     '''
-    NCConcept - Class to extend ConceptHierarchy to work with multiple netCDF files
+    NCConceptHierarchy - Class to extend ConceptHierarchy to work with multiple netCDF files
     '''
     def __init__(self, initial_concept_uri=None, lang=None, broader=True, narrower=False, verbose=False):
         '''
-        Constructor for class NCConcept descended from class ConceptHierarchy
+        Constructor for class NCConceptHierarchy descended from class ConceptHierarchy
         '''
         # Call inherited constructor
         ConceptHierarchy.__init__(self,

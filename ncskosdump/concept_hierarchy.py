@@ -11,7 +11,7 @@ class ConceptHierarchy(object):
     """
     Class to track broader/narrower heirarchy of concepts
     """
-    def get_concept_from_uri(self, concept_uri):
+    def get_concept_from_uri(self, concept_uri, refresh_cache=False):
         """
         Recursive function to return dict containing altLabels and lists of broader and narrower concepts
         for the specified concept_uri. Note that "broader" concepts are searched recursively up to the top concept, 
@@ -25,12 +25,13 @@ class ConceptHierarchy(object):
         if not concept_uri:
             return None
         
-        concept = self.concept_registry.get(concept_uri)  # Check registry to see if we already have it
+        concept = self.concept_registry.get(concept_uri) or {} # Check registry to see if we already have it
         
         if concept:
             if self.verbose:
                 print 'Found concept in cache for URI %s' % concept_uri
-            return concept
+            if not refresh_cache:
+                return concept
         
         if self.verbose:
             print 'Resolving concept_uri = %s' % concept_uri
@@ -42,27 +43,29 @@ class ConceptHierarchy(object):
             
             # Create "fake" concept object with no broader/narrower concepts
             label = 'Unresolved URI ' + os.path.basename(concept_uri)
-            concept = {'prefLabel': label,
-                       'uri': concept_uri,
-                       'altLabels': [label,],
-                       'broader':[],
-                       'narrower': []
-                       }
+            concept.update({'prefLabel': label,
+                            'uri': concept_uri,
+                            'altLabels': [label,],
+                            'broader':[],
+                            'narrower': [],
+                            'unresolved': True
+                            })
             
             self.concept_registry[concept_uri] = concept
             
             return concept 
             
-        concept = {'prefLabel': (concept_results.get('skos__prefLabel_' + self.lang) or 
-                                 concept_results.get('skos__prefLabel_en') + ' (English)'
-                                 ),
-                   'uri': concept_uri,
-                   'altLabels': [alt_label.strip() 
-                                 for alt_label in concept_results['skos__altLabels'].split(',') 
-                                 if alt_label],
-                   'broader': [],
-                   'narrower': []
-                   }
+        concept.update({'prefLabel': (concept_results.get('skos__prefLabel_' + self.lang) or 
+                                      concept_results.get('skos__prefLabel_en') + ' (English)'
+                                      ),
+                        'uri': concept_uri,
+                        'altLabels': [alt_label.strip() 
+                                      for alt_label in concept_results['skos__altLabels'].split(',') 
+                                      if alt_label],
+                        'broader': [],
+                        'narrower': [],
+                        'unresolved': False
+                        })
             
         self.concept_registry[concept_uri] = concept
         
@@ -155,7 +158,17 @@ class ConceptHierarchy(object):
             for narrower_concept in concept['narrower']:
                 self.print_concept_tree(narrower_concept, level+1)
 
+    def get_unresolved_concepts(self):
+        return [concept for concept in self.concept_registry.values() 
+                if concept['unresolved']
+                ]
 
+    def retry_unresolved_uris(self):
+        for unresolved_concept in self.get_unresolved_concepts():
+            self.get_concept_from_uri(unresolved_concept['uri'], refresh_cache=True)
+            
+        
+        
 def main():
     '''
     Main function for quick-and-dirty testing. May be removed later

@@ -7,8 +7,9 @@ import sys
 import os
 import re
 from glob import glob
+from time import sleep
 
-from ncskosdump.nc_concept import NCConcept
+from ncskosdump.nc_concept_hierarchy import NCConceptHierarchy
 
 def main():
     '''
@@ -21,6 +22,10 @@ def main():
         --narrower to recursively create complete tree of narrower concepts, not just ones resolved 
             directly from URIs
         --altLabels=<altLabel_list> where <altLabel_list> is a comma-separated list of altLabels to find
+        --retries=<max_retries> where <max_retries> is the maximum number of retries to attempt for
+            unresolved URIs. Default retries = 0
+        --delay=<retry_delay_seconds> where <retry_delay_seconds> is the number of seconds to wait before 
+            each retry. Default delay = 2s
         
     Command line arguments without a leading '-' or '--' are assumed to be targets, which can be either 
         individual netCDF files or directories containing netCDF files.
@@ -54,6 +59,16 @@ def main():
     altlabels = arg_value_dict.get('altlabels')
     altlabels = altlabels.split(',') if altlabels else []
     
+    try:
+        retries = int(arg_value_dict.get('retries'))
+    except:
+        retries = 0 # Default to no retry                
+    
+    try:
+        retry_delay = int(arg_value_dict.get('delay'))
+    except:
+        retry_delay = 2 # Default to 2s delay before retries               
+    
     if verbose:
         print 'Parameters:'
         for arg_key in arg_value_dict.keys():
@@ -72,23 +87,41 @@ def main():
             nc_path_list += sorted(glob(target))
 
     # Create NCConcept to build concept trees from URIs in target netCDF files
-    nc_concept = NCConcept(lang=arg_value_dict.get('lang'), 
-                                         broader=True, # Always resolve broader to top concepts
-                                         narrower=arg_value_dict.get('narrower'),
-                                         verbose=verbose
-                                         )   
+    nc_concept_hierarchy = NCConceptHierarchy(lang=arg_value_dict.get('lang'), 
+                                              broader=True, # Always resolve broader to top concepts
+                                              narrower=arg_value_dict.get('narrower'),
+                                              verbose=verbose
+                                              )   
      
     if verbose:
         print '\nReading %s netCDF files' % len(nc_path_list)
     for nc_path in nc_path_list:
-        nc_concept.get_concepts_from_netcdf(nc_path)
+        nc_concept_hierarchy.get_concepts_from_netcdf(nc_path)
+        
+    # Attempt retry unresolved URIs if retries > 0
+    for retry in range(retries):
+        if not len(nc_concept_hierarchy.get_unresolved_concepts()):
+            break
+
+        if verbose:
+            print '\nRetrying unresolved URIs - attempt %d' % (retry + 1)
+            
+        if (retries - retry) >= 1:
+            if verbose:
+                print 'Waiting %d seconds' % retry_delay
+            sleep(retry_delay)
+
+        nc_concept_hierarchy.retry_unresolved_uris()
+      
+            
+  
     
     print '=' * 80 + '\nDatasets grouped by concept\n'
-    for top_concept in sorted(nc_concept.get_top_concepts()):
-        nc_concept.print_concept_tree(top_concept)
+    for top_concept in sorted(nc_concept_hierarchy.get_top_concepts()):
+        nc_concept_hierarchy.print_concept_tree(top_concept)
         print
         
-    uncategorised_list = nc_concept.get_dataset_variables_without_concept()
+    uncategorised_list = nc_concept_hierarchy.get_dataset_variables_without_concept()
     if uncategorised_list:
         print 'Uncategorised (Missing URI)'
         for dataset_variable in uncategorised_list:
@@ -100,20 +133,20 @@ def main():
     if altlabels:
         print 'altLabel matches'
     for altlabel in altlabels:
-        altlabel_concepts = nc_concept.get_concept_by_altlabel(altlabel)
+        altlabel_concepts = nc_concept_hierarchy.get_concept_by_altlabel(altlabel)
         if altlabel_concepts:
             print '\nConcepts and datasets with altLabel "%s":' % altlabel
             for altlabel_concept in altlabel_concepts:
                 print '  %s' % altlabel_concept['prefLabel']
-                for dataset_variable in nc_concept.get_dataset_variables_from_concept(altlabel_concept):
+                for dataset_variable in nc_concept_hierarchy.get_dataset_variables_from_concept(altlabel_concept):
                     print '\t' + ':'.join([str(item) for item in dataset_variable])
                     
-                narrower_concepts = nc_concept.get_related_concepts(altlabel_concept)
+                narrower_concepts = nc_concept_hierarchy.get_related_concepts(altlabel_concept)
                 if narrower_concepts:
                     print '  Narrower Concepts:'
                     for narrower_concept in narrower_concepts:
                         print '    %s' % narrower_concept['prefLabel']
-                        for dataset_variable in nc_concept.get_dataset_variables_from_concept(narrower_concept):
+                        for dataset_variable in nc_concept_hierarchy.get_dataset_variables_from_concept(narrower_concept):
                             print '\t' + ':'.join([str(item) for item in dataset_variable])
         else:
             print '\nNo concepts found with altLabel "%s"' % altlabel
