@@ -137,7 +137,7 @@ def main():
         if altlabel_concepts:
             print '\nConcepts and datasets with altLabel "%s":' % altlabel
             for altlabel_concept in altlabel_concepts:
-                print '  %s' % altlabel_concept['prefLabel']
+                print '  %s' % altlabel_concept.prefLabel
                 for dataset_variable in nc_concept_hierarchy.get_dataset_variables_from_concept(altlabel_concept):
                     print '\t' + ':'.join([str(item) for item in dataset_variable])
                     
@@ -145,7 +145,7 @@ def main():
                 if narrower_concepts:
                     print '  Narrower Concepts:'
                     for narrower_concept in narrower_concepts:
-                        print '    %s' % narrower_concept['prefLabel']
+                        print '    %s' % narrower_concept.prefLabel
                         for dataset_variable in nc_concept_hierarchy.get_dataset_variables_from_concept(narrower_concept):
                             print '\t' + ':'.join([str(item) for item in dataset_variable])
         else:

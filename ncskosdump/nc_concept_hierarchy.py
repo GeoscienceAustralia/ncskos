@@ -99,8 +99,8 @@ class NCConceptHierarchy(ConceptHierarchy):
         '''
         Recursive helper function to print indented concept subtree with datasets
         '''
-        print '\t' * level + concept['prefLabel']
+        print '\t' * level + concept.prefLabel
         for dataset_variable in self.get_dataset_variables_from_concept(concept):
             print '\t' * level + '  ' + ':'.join([str(item) for item in dataset_variable])
-        for narrower_concept in concept['narrower']:
+        for narrower_concept in concept.narrower:
             self.print_concept_tree(narrower_concept, level+1)

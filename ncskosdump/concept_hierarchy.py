@@ -6,7 +6,77 @@ Created on 16Dec.,2016
 import os
 from ncskosdump.ld_functions import ConceptFetcher
 
+class Concept(object):
+    '''
+    Simple class to hold Concept attributes.
+    '''
+    def __init__(self,
+                 concept_uri,
+                 prefLabel=None,
+                 altLabels=None, # List of altLabel strings
+                 unresolved=True
+                 ):
+        '''
+        Constructor for simple Concept class. Everything is public.
+        '''
+        self.uri = concept_uri
+        
+        # Assume URI is unresolved for initial object
+        label = 'Unresolved URI ' + os.path.basename(concept_uri)
+        self.prefLabel = prefLabel or label 
+        self.altLabels = altLabels or [label]
+        self.unresolved = unresolved
 
+        self.broader = []
+        self.narrower = []
+        
+    def update(self, concept_results, lang='en'):
+        '''
+        Function to update concept attributes from concept_fetcher.get_results() result dict
+        '''
+        if concept_results:
+            self.prefLabel = (concept_results.get('skos__prefLabel_' + lang) or 
+                              concept_results.get('skos__prefLabel_en') + ' (English)'
+                              )
+            self.altLabels = [alt_label.strip() 
+                              for alt_label in concept_results['skos__altLabels'].split(',') 
+                              if alt_label]
+    
+            self.unresolved = False
+
+    def add_related_concept(self, related_concept, relationship='narrower'):
+        '''
+        Function to add new narrower or broader concept
+        '''
+        relationship_list = getattr(self, relationship)                             
+        assert type(relationship_list) == list, 'Unrecognised relationship "%s"' % relationship
+        
+        if related_concept not in relationship_list:
+            relationship_list.append(related_concept)
+
+    def get_related_concepts(self, relationship='narrower'):
+        '''
+        Recursive function to return list of all narrower or broader concepts for concept. 
+        '''
+        relationship_list = getattr(self, relationship)                             
+        assert type(relationship_list) == list, 'Unrecognised relationship "%s"' % relationship
+        
+        related_concepts = list(relationship_list)
+        for related_concept in relationship_list:
+            related_concepts += self.get_related_concepts(related_concept, relationship)                         
+        return related_concepts
+    
+    
+    def get_sibling_concepts(self):
+        '''
+        Function to return all sibling concepts (narrower concepts of broader concepts)
+        '''
+        sibling_concept_list = []
+        for broader_concept in self.broader: # Allow for multiple "broader" concepts
+            sibling_concept_list += broader_concept.narrower
+        return sibling_concept_list
+        
+        
 class ConceptHierarchy(object):
     """
     Class to track broader/narrower heirarchy of concepts
@@ -25,7 +95,8 @@ class ConceptHierarchy(object):
         if not concept_uri:
             return None
         
-        concept = self.concept_registry.get(concept_uri) or {} # Check registry to see if we already have it
+        # Check registry to see if we already have it cached
+        concept = self.concept_registry.get(concept_uri) 
         
         if concept:
             if self.verbose:
@@ -33,58 +104,35 @@ class ConceptHierarchy(object):
             if not refresh_cache:
                 return concept
         
+        concept = Concept(concept_uri) # create new Concept object (assume unresolved)
         if self.verbose:
             print 'Resolving concept_uri = %s' % concept_uri
         
         try:
             concept_results = self.concept_fetcher.get_results(concept_uri)  # Look up URI
         except Exception as e:
-            print 'WARNING: Unable to resolve URI %s: %s' % (concept_uri, e.message)
-            
-            # Create "fake" concept object with no broader/narrower concepts
-            label = 'Unresolved URI ' + os.path.basename(concept_uri)
-            concept.update({'prefLabel': label,
-                            'uri': concept_uri,
-                            'altLabels': [label,],
-                            'broader':[],
-                            'narrower': [],
-                            'unresolved': True
-                            })
-            
-            self.concept_registry[concept_uri] = concept
-            
+            print 'WARNING: Unable to resolve URI %s: %s' % (concept_uri, e.message)                       
+            self.concept_registry[concept_uri] = concept            
             return concept 
             
-        concept.update({'prefLabel': (concept_results.get('skos__prefLabel_' + self.lang) or 
-                                      concept_results.get('skos__prefLabel_en') + ' (English)'
-                                      ),
-                        'uri': concept_uri,
-                        'altLabels': [alt_label.strip() 
-                                      for alt_label in concept_results['skos__altLabels'].split(',') 
-                                      if alt_label],
-                        'broader': [],
-                        'narrower': [],
-                        'unresolved': False
-                        })
+        concept.update(concept_results, lang=self.lang)
             
         self.concept_registry[concept_uri] = concept
         
         # Recursively populate narrower & broader lists if required
         if self.broader:
-            concept['broader'] += [self.get_concept_from_uri(uri.strip()) for uri in (concept_results.get('skos__broader') or '').split(',') if uri]
+            concept.broader += [self.get_concept_from_uri(uri.strip()) for uri in (concept_results.get('skos__broader') or '').split(',') if uri]
             
             if not self.narrower:  # Update narrower list in broader concept(s) as required
-                for broader_concept in concept['broader']:
-                    if concept not in broader_concept['narrower']:
-                        broader_concept['narrower'].append(concept)
+                for broader_concept in concept.broader:
+                    broader_concept.add_related_concept(concept, 'narrower')
              
         if self.narrower:
-            concept['narrower'] += [self.get_concept_from_uri(uri.strip()) for uri in (concept_results.get('skos__narrower') or '').split(',') if uri]
+            concept.narrower += [self.get_concept_from_uri(uri.strip()) for uri in (concept_results.get('skos__narrower') or '').split(',') if uri]
 
             if not self.broader: # Update broader list in narrower concept(s) as required
-                for narrower_concept in concept['narrower']:
-                    if concept not in narrower_concept['broader']:
-                        narrower_concept['broader'].append(concept)
+                for narrower_concept in concept.narrower:
+                    narrower_concept.add_related_concept(concept, 'broader')
                             
         return concept
     
@@ -92,14 +140,14 @@ class ConceptHierarchy(object):
         '''
         Function to return list of concepts without any "broader" concepts
         '''
-        return [concept for concept in self.concept_registry.values() if not concept['broader']]
+        return [concept for concept in self.concept_registry.values() if not concept.broader]
     
     def get_bottom_concepts(self):
         '''
         Function to return list of concepts without any "narrower" concepts recorded. 
         Note: Narrower concepts may exist in vocab, but will only be recorded if their URI is resolved
         '''
-        return [concept for concept in self.concept_registry.values() if not concept['narrower']]
+        return [concept for concept in self.concept_registry.values() if not concept.narrower]
     
     def get_concept_by_altlabel(self, altlabel):
         '''
@@ -107,19 +155,8 @@ class ConceptHierarchy(object):
         '''
         return [concept for concept in self.concept_registry.values() 
                 if altlabel.lower() in [concept_altlabel.lower() 
-                                        for concept_altlabel in concept['altLabels']]
+                                        for concept_altlabel in concept.altLabels]
                 ]
-    
-    def get_related_concepts(self, concept, relationship='narrower'):
-        '''
-        Recursive function to return list of all narrower or broader concepts for specified concept. 
-        '''
-        assert (relationship == 'narrower') or (relationship == 'broader'), 'relationship must be either "narrower" or "broader"'
-        related_concepts = list(concept[relationship])
-        for related_concept in concept[relationship]:
-            related_concepts += self.get_related_concepts(related_concept, relationship)                         
-        return related_concepts
-    
     
     def __init__(self, initial_concept_uri=None, lang=None, broader=True, narrower=False, verbose=False):
         """
@@ -156,8 +193,8 @@ class ConceptHierarchy(object):
         Recursive function to print indented concept subtree
         '''
         if concept is not None:
-            print '\t' * level + concept['prefLabel']
-            for narrower_concept in concept['narrower']:
+            print '\t' * level + concept.prefLabel
+            for narrower_concept in concept.narrower:
                 self.print_concept_tree(narrower_concept, level+1)
 
     def get_unresolved_concepts(self):
@@ -165,7 +202,7 @@ class ConceptHierarchy(object):
         Function to return a list of all unresolved concepts
         '''
         return [concept for concept in self.concept_registry.values() 
-                if concept['unresolved']
+                if concept.unresolved
                 ]
 
     def retry_unresolved_uris(self):
@@ -173,18 +210,9 @@ class ConceptHierarchy(object):
         Function to try to retry failed web queries and update all unresolved URIs
         '''
         for unresolved_concept in self.get_unresolved_concepts():
-            self.get_concept_from_uri(unresolved_concept['uri'], refresh_cache=True)
+            self.get_concept_from_uri(unresolved_concept.uri, refresh_cache=True)
             
      
-    def get_sibling_concepts(self, concept):
-        '''
-        Function to return all sibling concepts (narrower concepts of broader concepts)
-        '''
-        sibling_concept_list = []
-        for broader_concept in concept['broader']: # Allow for multiple "broader" concepts
-            sibling_concept_list += broader_concept['narrower']
-        return sibling_concept_list
-        
 def main():
     '''
     Main function for quick-and-dirty testing. May be removed later
