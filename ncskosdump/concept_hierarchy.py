@@ -63,7 +63,7 @@ class Concept(object):
         
         related_concepts = list(relationship_list)
         for related_concept in relationship_list:
-            related_concepts += self.get_related_concepts(related_concept, relationship)                         
+            related_concepts += related_concept.get_related_concepts(relationship)                         
         return related_concepts
     
     

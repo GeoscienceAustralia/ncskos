@@ -55,7 +55,7 @@ def main():
         
     verbose=arg_value_dict.get('verbose')
     
-    # Get list of altlabels to match
+    # Get list of altlabels against which to match concepts
     altlabels = arg_value_dict.get('altlabels')
     altlabels = altlabels.split(',') if altlabels else []
     
@@ -141,7 +141,7 @@ def main():
                 for dataset_variable in nc_concept_hierarchy.get_dataset_variables_from_concept(altlabel_concept):
                     print '\t' + ':'.join([str(item) for item in dataset_variable])
                     
-                narrower_concepts = nc_concept_hierarchy.get_related_concepts(altlabel_concept)
+                narrower_concepts = altlabel_concept.get_related_concepts('narrower')
                 if narrower_concepts:
                     print '  Narrower Concepts:'
                     for narrower_concept in narrower_concepts:
