@@ -147,15 +147,26 @@ class NcSKOSDump(object):
                 combined_skos_lookup_dict = {}
                 for uri in [uri.strip() for uri in uris.split(',')]:
 
-                    skos_lookup_dict = self.concept_fetcher.get_results(uri)
+                    try:
+                        skos_lookup_dict = self.concept_fetcher.get_results(uri)
+                    except Exception as e:
+                        logger.error(
+                            'URI resolution failed for %s: %s', uri, e.message)
+                        if self.error:
+                            self._error += '\n' + e.message
+                        else:
+                            self._error = e.message
+                            continue
+
                     logger.debug('skos_lookup_dict = %s', skos_lookup_dict)
                     
                     for key, value in skos_lookup_dict.items():
                         existing_value = combined_skos_lookup_dict.get(key)
-                        if existing_value:
-                            combined_skos_lookup_dict[key] = existing_value + ', ' + value
-                        else:
-                            combined_skos_lookup_dict[key] = value
+                        if value:
+                            if existing_value:
+                                combined_skos_lookup_dict[key] = existing_value + ', ' + value
+                            else:
+                                combined_skos_lookup_dict[key] = value
                             
                 # Write each key:value pair as a separate element
                 for key, value in combined_skos_lookup_dict.items():
@@ -187,21 +198,13 @@ class NcSKOSDump(object):
                         if (attribute_element.attrib.get('name') ==
                             NcSKOSDump.SKOS_ATTRIBUTE)
                         ]:
-                try:
-                    uris = skos_element.attrib['value']
-                    logger.debug('uris = %s', uris)
+                uris = skos_element.attrib['value']
+                logger.debug('uris = %s', uris)
 
-                    process_xml_skos_element(skos_element,
-                                             uris,
-                                             output_spool
-                                             )
-                except Exception as e:
-                    logger.error(
-                        'URI resolution failed for %s: %s', uris, e.message)
-                    if self.error:
-                        self._error += '\n' + e.message
-                    else:
-                        self._error = e.message
+                process_xml_skos_element(skos_element,
+                                         uris,
+                                         output_spool
+                                         )
 
         def process_cdl(input_spool, output_spool):
             '''
@@ -220,15 +223,26 @@ class NcSKOSDump(object):
                 combined_skos_lookup_dict = {}
                 for uri in [uri.strip() for uri in uris.split(',')]:
 
-                    skos_lookup_dict = self.concept_fetcher.get_results(uri)
+                    try:
+                        skos_lookup_dict = self.concept_fetcher.get_results(uri)
+                    except Exception as e:
+                        logger.error(
+                            'URI resolution failed for %s: %s', uri, e.message)
+                        if self.error:
+                            self._error += '\n' + e.message
+                        else:
+                            self._error = e.message
+                        continue
+                    
                     logger.debug('skos_lookup_dict = %s', skos_lookup_dict)
                     
                     for key, value in skos_lookup_dict.items():
-                        existing_value = combined_skos_lookup_dict.get(key)
-                        if existing_value:
-                            combined_skos_lookup_dict[key] = existing_value + ', ' + value
-                        else:
-                            combined_skos_lookup_dict[key] = value
+                        if value:
+                            existing_value = combined_skos_lookup_dict.get(key)
+                            if existing_value:
+                                combined_skos_lookup_dict[key] = existing_value + ', ' + value
+                            else:
+                                combined_skos_lookup_dict[key] = value
 
 
                 # Write each key:value pair as a separate line
@@ -260,24 +274,16 @@ class NcSKOSDump(object):
 
                 attribute_match = re.match(attribute_regex, input_line)
                 if attribute_match is not None:  # input line contains SKOS URI
-                    try:
-                        logger.debug('attribute_match.groups() = %s',
-                                     attribute_match.groups())
-                        variable_name = attribute_match.group(1)
-                        uri = attribute_match.group(2)
-                        logger.debug('variable_name = %s, uri = %s',
-                                     variable_name, uri)
+                    logger.debug('attribute_match.groups() = %s',
+                                 attribute_match.groups())
+                    variable_name = attribute_match.group(1)
+                    uri = attribute_match.group(2)
+                    logger.debug('variable_name = %s, uri = %s',
+                                 variable_name, uri)
 
-                        process_cdl_skos_line(
-                            input_line, variable_name, uri, output_spool
-                        )
-                    except Exception as e:
-                        logger.error(
-                            'URI resolution failed for %s: %s', uri, e.message)
-                        if self.error:
-                            self._error += '\n' + e.message
-                        else:
-                            self._error = e.message
+                    process_cdl_skos_line(
+                        input_line, variable_name, uri, output_spool
+                    )
 
             input_spool.close()
 
