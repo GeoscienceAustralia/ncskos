@@ -252,7 +252,7 @@ class NcSKOSDump(object):
                                           ':' +
                                           NcSKOSDump.SKOS_ATTRIBUTE,
                                           variable_name + ':' + key
-                                          ).replace(uri, value)
+                                          ).replace(uris, value)
                     )
                     logger.debug('modified_line = %s', modified_line)
                     output_spool.write(modified_line)
