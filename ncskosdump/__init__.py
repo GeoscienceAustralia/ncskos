@@ -123,6 +123,35 @@ class NcSKOSDump(object):
             "--skos <skos_option>=<value>..." arguments
         :return: file-like object containing modified ncdump output
         """
+        def get_multi_uri_results(uris):
+            '''
+            Helper function to combine results from multiple URIs
+            '''
+            combined_skos_lookup_dict = {}
+            for uri in [uri.strip() for uri in uris.split(',')]:
+
+                try:
+                    skos_lookup_dict = self.concept_fetcher.get_results(uri)
+                except Exception as e:
+                    logger.error(
+                        'URI resolution failed for %s: %s', uri, e.message)
+                    if self.error:
+                        self._error += '\n' + e.message
+                    else:
+                        self._error = e.message
+                    continue
+                
+                logger.debug('skos_lookup_dict = %s', skos_lookup_dict)
+                
+                for key, value in skos_lookup_dict.items():
+                    if value:
+                        existing_value = combined_skos_lookup_dict.get(key)
+                        if existing_value:
+                            combined_skos_lookup_dict[key] = existing_value + ', ' + value
+                        else:
+                            combined_skos_lookup_dict[key] = value
+
+            
         def process_xml(input_spool, output_spool):
             '''
             Internal function to process full XML ncdump output
@@ -144,32 +173,8 @@ class NcSKOSDump(object):
                 tail = parent_element[0].tail
                 parent_element[-1].tail = tail
 
-                combined_skos_lookup_dict = {}
-                for uri in [uri.strip() for uri in uris.split(',')]:
-
-                    try:
-                        skos_lookup_dict = self.concept_fetcher.get_results(uri)
-                    except Exception as e:
-                        logger.error(
-                            'URI resolution failed for %s: %s', uri, e.message)
-                        if self.error:
-                            self._error += '\n' + e.message
-                        else:
-                            self._error = e.message
-                            continue
-
-                    logger.debug('skos_lookup_dict = %s', skos_lookup_dict)
-                    
-                    for key, value in skos_lookup_dict.items():
-                        existing_value = combined_skos_lookup_dict.get(key)
-                        if value:
-                            if existing_value:
-                                combined_skos_lookup_dict[key] = existing_value + ', ' + value
-                            else:
-                                combined_skos_lookup_dict[key] = value
-                            
                 # Write each key:value pair as a separate element
-                for key, value in combined_skos_lookup_dict.items():
+                for key, value in get_multi_uri_results(uris).items():
                     new_element = parent_element.makeelement(
                         skos_element.tag, attrib={'name': key, 'value': value})
                     new_element.tail = tail
@@ -186,6 +191,7 @@ class NcSKOSDump(object):
                                                          xml_declaration=True,
                                                          encoding="UTF-8")))
 
+            # Start of process_xml function
             netcdf_tree = etree.fromstring(input_spool.read())
             input_spool.close()  # We don't need this any more
 
@@ -220,33 +226,8 @@ class NcSKOSDump(object):
                 Internal function to process a single line of CDL ncdump
                 output
                 '''
-                combined_skos_lookup_dict = {}
-                for uri in [uri.strip() for uri in uris.split(',')]:
-
-                    try:
-                        skos_lookup_dict = self.concept_fetcher.get_results(uri)
-                    except Exception as e:
-                        logger.error(
-                            'URI resolution failed for %s: %s', uri, e.message)
-                        if self.error:
-                            self._error += '\n' + e.message
-                        else:
-                            self._error = e.message
-                        continue
-                    
-                    logger.debug('skos_lookup_dict = %s', skos_lookup_dict)
-                    
-                    for key, value in skos_lookup_dict.items():
-                        if value:
-                            existing_value = combined_skos_lookup_dict.get(key)
-                            if existing_value:
-                                combined_skos_lookup_dict[key] = existing_value + ', ' + value
-                            else:
-                                combined_skos_lookup_dict[key] = value
-
-
                 # Write each key:value pair as a separate line
-                for key, value in combined_skos_lookup_dict.items():
+                for key, value in get_multi_uri_results(uris).items():
                     modified_line = (
                         skos_line.replace(variable_name +
                                           ':' +
@@ -257,10 +238,10 @@ class NcSKOSDump(object):
                     logger.debug('modified_line = %s', modified_line)
                     output_spool.write(modified_line)
 
+            # Start of process_cdl function
             # TODO: Investigate potential issues around global attributes
             # Example: '    time:concept_uri =
             # "http://pid.geoscience.gov.au/def/voc/netCDF-ld-example-tos/time"
-            # ;'
             attribute_regex_string = ('^\s*(\w*):' +
                                       NcSKOSDump.SKOS_ATTRIBUTE +
                                       '\s*=\s*"(http(s*)://.*)"\s*;\s*$'
