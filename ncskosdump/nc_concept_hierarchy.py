@@ -24,7 +24,7 @@ class NCConceptHierarchy(ConceptHierarchy):
                                   verbose=verbose
                                   )   
          
-        # Cache of concepts per variable per file
+        # Cache of concept lists per variable per file
         self.dataset_variable_concept_dict = {} 
         
         
@@ -49,21 +49,22 @@ class NCConceptHierarchy(ConceptHierarchy):
             for variable_name in sorted(nc_dataset.variables.keys()):
                 variable = nc_dataset.variables[variable_name]
                 if hasattr(variable, 'skos__concept_uri'):
-                    concept_uri = variable.skos__concept_uri
+                    dataset_variable_concept_dict[(nc_path, variable_name)] = [] # empty list of concepts
+                    for concept_uri in [concept_uri.strip() for concept_uri in variable.skos__concept_uri.split(',')]:
                     
-                    if self.verbose:
-                        print '  Processing ' + os.path.basename(nc_path) + ':' + variable_name + ' with URI', concept_uri
-                        
-                    concept = self.get_concept_from_uri(concept_uri)                    
-                    dataset_variable_concept_dict[(nc_path, variable_name)] = concept
+                        if self.verbose:
+                            print '  Processing ' + os.path.basename(nc_path) + ':' + variable_name + ' with URI', concept_uri
+                            
+                        concept = self.get_concept_from_uri(concept_uri)                    
+                        dataset_variable_concept_dict[(nc_path, variable_name)].append(concept)
                     
             nc_dataset.close()
             
             # Create (<netCDF_path> <variable_name>) tuple for dataset with no concept
-            dataset_variable_concept_dict = dataset_variable_concept_dict or {(nc_path, None): None}
+            dataset_variable_concept_dict = dataset_variable_concept_dict or {(nc_path, None): []}
                 
             self.dataset_variable_concept_dict.update(dataset_variable_concept_dict) # Update cache
-        
+
         return dataset_variable_concept_dict
     
     def get_all_dataset_variables(self):
@@ -74,7 +75,7 @@ class NCConceptHierarchy(ConceptHierarchy):
     
     def get_concept_from_dataset_variable(self, dataset_variable):
         '''
-        Function to return concept for a given (<netCDF_path> <variable_name>) tuple
+        Function to return list of concepts for a given (<netCDF_path> <variable_name>) tuple
         '''
         return self.dataset_variable_concept_dict.get(dataset_variable)
     
@@ -83,7 +84,7 @@ class NCConceptHierarchy(ConceptHierarchy):
         Function to return (<netCDF_path> <variable_name>) tuples from cache which have the specified concept
         '''
         return sorted([dataset_variable for dataset_variable in self.get_all_dataset_variables() 
-                       if self.dataset_variable_concept_dict[dataset_variable] == concept
+                       if concept in self.dataset_variable_concept_dict[dataset_variable]
                        ])
         
     def get_dataset_variables_without_concept(self):

@@ -112,10 +112,8 @@ def main():
             sleep(retry_delay)
 
         nc_concept_hierarchy.retry_unresolved_uris()
-      
-            
   
-    
+    # Print datasets grouped by concept
     print '=' * 80 + '\nDatasets grouped by concept\n'
     for top_concept in sorted(nc_concept_hierarchy.get_top_concepts()):
         nc_concept_hierarchy.print_concept_tree(top_concept)

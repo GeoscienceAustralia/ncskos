@@ -130,7 +130,7 @@ class NcSKOSDump(object):
             '''
 
             def process_xml_skos_element(skos_element,
-                                         uri,
+                                         uris,
                                          output_spool):
                 '''
                 Internal function to process single SKOS element in XML
@@ -138,17 +138,27 @@ class NcSKOSDump(object):
                 '''
                 logger.debug('skos_element = %s', etree.tostring(
                     skos_element, pretty_print=False))
-
-                skos_lookup_dict = self.concept_fetcher.get_results(uri)
-                logger.debug('skos_lookup_dict = %s', skos_lookup_dict)
-
+                
                 parent_element = skos_element.getparent()
                 # Fix up formatting
                 tail = parent_element[0].tail
                 parent_element[-1].tail = tail
 
+                combined_skos_lookup_dict = {}
+                for uri in [uri.strip() for uri in uris.split(',')]:
+
+                    skos_lookup_dict = self.concept_fetcher.get_results(uri)
+                    logger.debug('skos_lookup_dict = %s', skos_lookup_dict)
+                    
+                    for key, value in skos_lookup_dict.items():
+                        existing_value = combined_skos_lookup_dict.get(key)
+                        if existing_value:
+                            combined_skos_lookup_dict[key] = existing_value + ', ' + value
+                        else:
+                            combined_skos_lookup_dict[key] = value
+                            
                 # Write each key:value pair as a separate element
-                for key, value in skos_lookup_dict.items():
+                for key, value in combined_skos_lookup_dict.items():
                     new_element = parent_element.makeelement(
                         skos_element.tag, attrib={'name': key, 'value': value})
                     new_element.tail = tail
@@ -178,16 +188,16 @@ class NcSKOSDump(object):
                             NcSKOSDump.SKOS_ATTRIBUTE)
                         ]:
                 try:
-                    uri = skos_element.attrib['value']
-                    logger.debug('uri = %s', uri)
+                    uris = skos_element.attrib['value']
+                    logger.debug('uris = %s', uris)
 
                     process_xml_skos_element(skos_element,
-                                             uri,
+                                             uris,
                                              output_spool
                                              )
                 except Exception as e:
                     logger.error(
-                        'URI resolution failed for %s: %s', uri, e.message)
+                        'URI resolution failed for %s: %s', uris, e.message)
                     if self.error:
                         self._error += '\n' + e.message
                     else:
@@ -201,19 +211,28 @@ class NcSKOSDump(object):
 
             def process_cdl_skos_line(skos_line,
                                       variable_name,
-                                      uri,
+                                      uris,
                                       output_spool):
                 '''
                 Internal function to process a single line of CDL ncdump
                 output
                 '''
+                combined_skos_lookup_dict = {}
+                for uri in [uri.strip() for uri in uris.split(',')]:
 
-                skos_lookup_dict = self.concept_fetcher.get_results(
-                    uri)
-                logger.debug('skos_lookup_dict = %s', skos_lookup_dict)
+                    skos_lookup_dict = self.concept_fetcher.get_results(uri)
+                    logger.debug('skos_lookup_dict = %s', skos_lookup_dict)
+                    
+                    for key, value in skos_lookup_dict.items():
+                        existing_value = combined_skos_lookup_dict.get(key)
+                        if existing_value:
+                            combined_skos_lookup_dict[key] = existing_value + ', ' + value
+                        else:
+                            combined_skos_lookup_dict[key] = value
+
 
                 # Write each key:value pair as a separate line
-                for key, value in skos_lookup_dict.items():
+                for key, value in combined_skos_lookup_dict.items():
                     modified_line = (
                         skos_line.replace(variable_name +
                                           ':' +
