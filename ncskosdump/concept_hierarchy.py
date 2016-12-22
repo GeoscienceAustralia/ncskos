@@ -103,8 +103,9 @@ class ConceptHierarchy(object):
                 print 'Found concept in cache for URI %s' % concept_uri
             if not refresh_cache:
                 return concept
-        
-        concept = Concept(concept_uri) # create new Concept object (assume unresolved)
+        else:
+            concept = Concept(concept_uri) # create new Concept object (assume unresolved)
+            
         if self.verbose:
             print 'Resolving concept_uri = %s' % concept_uri
         
