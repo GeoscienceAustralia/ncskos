@@ -20,7 +20,7 @@ setup(name='ncskosdump',
       requires=[
           'distutils',
           'glob',
-          'loggin',
+          'logging',
           'lxml',
           'netCDF4',
           'os',
