@@ -26,6 +26,7 @@ def main():
             unresolved URIs. Default retries = 0
         --delay=<retry_delay_seconds> where <retry_delay_seconds> is the number of seconds to wait before 
             each retry. Default delay = 2s
+        --refresh to discard current disk cache
         
     Command line arguments without a leading '-' or '--' are assumed to be targets, which can be either 
         individual netCDF files or directories containing netCDF files.
