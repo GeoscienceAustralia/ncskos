@@ -158,8 +158,7 @@ class ConceptHierarchy(object):
         Function to return list of concepts with matching altLabel (case insensitive match). 
         '''
         return [concept for concept in self.concept_registry.values() 
-                if altlabel.lower() in [concept_altlabel.lower() 
-                                        for concept_altlabel in concept.altLabels]
+                if altlabel in concept.altLabels
                 ]
     
     def __init__(self, 
