@@ -35,7 +35,7 @@ class Concept(object):
         
     def update_from_skos_query(self, concept_results, lang='en'):
         '''
-        Function to update_from_skos_query concept attributes from concept_fetcher.get_results() result dict
+        Function to update concept attributes from concept_fetcher.get_results() result dict
         '''
         if concept_results:
             self.prefLabel = (concept_results.get('skos__prefLabel_' + lang) or 
@@ -216,7 +216,10 @@ class ConceptHierarchy(object):
         
         self.concept_registry = {}
         
-        if not self.refresh:
+        if self.refresh:
+            if self.verbose:
+                print 'Refreshing disk cache'
+        else:
             self.load()    
         
         if initial_concept_uri:
@@ -249,7 +252,7 @@ class ConceptHierarchy(object):
 
     def retry_unresolved_uris(self):
         '''
-        Function to try to retry failed web queries and update_from_skos_query all unresolved URIs
+        Function to try to retry failed web queries and update all unresolved URIs
         '''
         for unresolved_concept in self.get_unresolved_concepts():
             self.get_concept_from_uri(unresolved_concept.uri, refresh_cache=True)
