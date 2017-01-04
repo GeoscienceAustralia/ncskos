@@ -134,7 +134,9 @@ class NCConceptHierarchy(ConceptHierarchy):
         ConceptHierarchy.dump(self)
         
         cached_dataset_variable_concept_dict = {dataset_variable: concept.uri if concept is not None else None
-                                                for dataset_variable, concept in self.dataset_variable_concept_dict.iteritems()}
+                                                for dataset_variable, concept in self.dataset_variable_concept_dict.iteritems()
+                                                if concept is None or not concept.unresolved # Don't cache unresolved concepts
+                                                }
         
         cached_dataset_variable_concept_dict_path = os.path.join(self.cache_dir, 'dataset_variable_concepts.yaml')
         cached_dataset_variable_concept_dict_file = open(cached_dataset_variable_concept_dict_path, 'w')

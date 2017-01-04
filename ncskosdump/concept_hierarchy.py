@@ -306,7 +306,7 @@ class ConceptHierarchy(object):
         for concept_uri, concept in self.concept_registry.iteritems():
             if concept is None:
                 cached_concept_dict[concept_uri] = None
-            else:
+            elif not concept.unresolved: # Don't cache unresolved concepts
                 cached_concept_dict[concept_uri] = {'concept_uri': concept.uri,
                                                     'prefLabel': concept.prefLabel,
                                                     'altLabels': concept.altLabels,
