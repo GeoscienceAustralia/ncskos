@@ -33,9 +33,9 @@ class Concept(object):
         self.narrower = []
         
         
-    def update(self, concept_results, lang='en'):
+    def update_from_skos_query(self, concept_results, lang='en'):
         '''
-        Function to update concept attributes from concept_fetcher.get_results() result dict
+        Function to update_from_skos_query concept attributes from concept_fetcher.get_results() result dict
         '''
         if concept_results:
             self.prefLabel = (concept_results.get('skos__prefLabel_' + lang) or 
@@ -44,7 +44,7 @@ class Concept(object):
             self.altLabels = [alt_label.strip() 
                               for alt_label in concept_results['skos__altLabels'].split(',') 
                               if alt_label]
-    
+
             self.unresolved = False
 
     def add_related_concept(self, related_concept, relationship='narrower'):
@@ -119,7 +119,7 @@ class ConceptHierarchy(object):
             self.concept_registry[concept_uri] = concept            
             return concept 
             
-        concept.update(concept_results, lang=self.lang)
+        concept.update_from_skos_query(concept_results, lang=self.lang)
             
         self.concept_registry[concept_uri] = concept
         
@@ -197,27 +197,26 @@ class ConceptHierarchy(object):
         assert narrower or broader, 'Need at least one of "broader" or "narrower" set to True in order to build concept trees'
         
         self.cache_dir = os.path.join(tempfile.gettempdir(), 'concept_hierarchy')
-        self.refresh = refresh or not os.path.isdir(self.cache_dir)
         
         self.lang = lang or 'en'
         self.narrower = narrower
         self.broader = broader
         self.verbose = verbose
         
-        skos_option_dict = {'altLabels': True, 
+        self.skos_option_dict = {'altLabels': True, 
                             'narrower': narrower, 
                             'broader': broader,
                             'lang': lang
                             }   
                 
         # Force refresh if SKOS options have changed
-        self.refresh = self.refresh or (skos_option_dict != get_cached_skos_option_dict()) 
+        self.refresh = refresh or (self.skos_option_dict != get_cached_skos_option_dict()) 
 
-        self.concept_fetcher = ConceptFetcher(skos_option_dict)
+        self.concept_fetcher = ConceptFetcher(self.skos_option_dict)
         
         self.concept_registry = {}
         
-        if self.refresh:
+        if not self.refresh:
             self.load()    
         
         if initial_concept_uri:
@@ -250,7 +249,7 @@ class ConceptHierarchy(object):
 
     def retry_unresolved_uris(self):
         '''
-        Function to try to retry failed web queries and update all unresolved URIs
+        Function to try to retry failed web queries and update_from_skos_query all unresolved URIs
         '''
         for unresolved_concept in self.get_unresolved_concepts():
             self.get_concept_from_uri(unresolved_concept.uri, refresh_cache=True)
@@ -259,6 +258,9 @@ class ConceptHierarchy(object):
         '''
         Function to load contents from disk cache
         '''
+        if self.verbose:
+            print 'Loading data from %s'% self.cache_dir
+               
         cached_concept_hierarchy_path = os.path.join(self.cache_dir, 'concept_hierarchy.yaml')
         try:
             cached_concept_hierarchy_file = open(cached_concept_hierarchy_path, 'r')
@@ -270,31 +272,44 @@ class ConceptHierarchy(object):
         # First pass creates concept objects
         for concept_uri in cached_concept_hierarchy_dict.keys():
             cached_concept_dict = cached_concept_hierarchy_dict[concept_uri]
-            self.concept_registry[concept_uri] = Concept(concept_uri=concept_uri,
-                                                                prefLabel=cached_concept_dict['prefLabel'],
-                                                                altLabels=cached_concept_dict['altLabels'], # List of altLabel strings
-                                                                unresolved=cached_concept_dict['unresolved']
-                                                                )
+            if cached_concept_dict is None:
+                self.concept_registry[concept_uri] = None
+            else:
+                self.concept_registry[concept_uri] = Concept(concept_uri=concept_uri,
+                                                                    prefLabel=cached_concept_dict['prefLabel'],
+                                                                    altLabels=cached_concept_dict['altLabels'], # List of altLabel strings
+                                                                    unresolved=cached_concept_dict['unresolved']
+                                                                    )
     
         # Second pass populates narrower/broader lists in concept objects
         for concept_uri, concept in self.concept_registry.iteritems():
-            cached_concept_dict = cached_concept_hierarchy_dict[concept_uri]
-            concept.narrower = [self.concept_registry[narrower_uri] for narrower_uri in cached_concept_dict['narrower']]
-            concept.broader = [self.concept_registry[broader_uri] for broader_uri in cached_concept_dict['broader']]
+            if concept is not None:
+                cached_concept_dict = cached_concept_hierarchy_dict[concept_uri]
+                concept.narrower = [self.concept_registry[narrower_uri] for narrower_uri in cached_concept_dict['narrower']]
+                concept.broader = [self.concept_registry[broader_uri] for broader_uri in cached_concept_dict['broader']]
             
     def dump(self):
         '''
         Function to dump current contents to disk cache
-        '''       
+        ''' 
+        if self.verbose:
+            print 'Caching data to %s'% self.cache_dir
+               
+        if not os.path.isdir(self.cache_dir):
+            os.mkdir(self.cache_dir)
+         
         cached_concept_dict = {}
         for concept_uri, concept in self.concept_registry.iteritems():
-            cached_concept_dict[concept_uri] = {'concept_uri': concept.concept_uri,
-                                                'prefLabel': concept.prefLabel,
-                                                'altLabels': concept.altLabels,
-                                                'unresolved': concept.unresolved,
-                                                'narrower': [narrower_concept.concept_uri for narrower_concept in concept.narrower],
-                                                'broader': [broader_concept.concept_uri for broader_concept in concept.broader],
-                                                }
+            if concept is None:
+                cached_concept_dict[concept_uri] = None
+            else:
+                cached_concept_dict[concept_uri] = {'concept_uri': concept.uri,
+                                                    'prefLabel': concept.prefLabel,
+                                                    'altLabels': concept.altLabels,
+                                                    'unresolved': concept.unresolved,
+                                                    'narrower': [narrower_concept.uri for narrower_concept in concept.narrower],
+                                                    'broader': [broader_concept.uri for broader_concept in concept.broader],
+                                                    }
 
         cached_skos_option_dict_path = os.path.join(self.cache_dir, 'skos_options.yaml')
         cached_skos_option_dict_file = open(cached_skos_option_dict_path, 'w')
