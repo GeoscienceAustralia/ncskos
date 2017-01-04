@@ -152,7 +152,7 @@ def main():
         else:
             print '\nNo concepts found with altLabel "%s"' % altlabel
 
-    if verbose:
+    if altlabels and verbose:
         print '\n' + '=' * 80
                       
 if __name__ == '__main__':
