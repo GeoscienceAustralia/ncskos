@@ -44,35 +44,27 @@ class NCConceptHierarchy(ConceptHierarchy):
             
         nc_path = os.path.abspath(nc_path)
         
-        # Check cache first
-        dataset_variable_concept_dict = {key: value 
-                                    for key, value in self.dataset_variable_concept_dict.iteritems() 
-                                    if key[0] == nc_path
-                                    }
+        dataset_variable_concept_dict = {}
         
-        if dataset_variable_concept_dict:
-            if self.verbose:
-                print 'Found concept(s) for netCDF file %s in cache' % nc_path
-        else:   
-            nc_dataset = netCDF4.Dataset(nc_path, 'r')
-            
-            # Check for global attribute
-            if hasattr(nc_dataset, 'skos__concept_uri'):
-                # Set variable_name to '' for global attribute
-                set_dataset_variable_concept(dataset_variable_concept_dict, nc_path, '', nc_dataset.skos__concept_uri)
+        nc_dataset = netCDF4.Dataset(nc_path, 'r')
         
-            # Check for variable attributes
-            for variable_name in sorted(nc_dataset.variables.keys()):
-                variable = nc_dataset.variables[variable_name]
-                if hasattr(variable, 'skos__concept_uri'):
-                    set_dataset_variable_concept(dataset_variable_concept_dict, nc_path, variable_name, variable.skos__concept_uri)
-                    
-            nc_dataset.close()
-            
-            # Create (<netCDF_path> <variable_name>) tuple for dataset with no concept
-            dataset_variable_concept_dict = dataset_variable_concept_dict or {(nc_path, None): None}
+        # Check for global attribute
+        if hasattr(nc_dataset, 'skos__concept_uri'):
+            # Set variable_name to '' for global attribute
+            set_dataset_variable_concept(dataset_variable_concept_dict, nc_path, '', nc_dataset.skos__concept_uri)
+    
+        # Check for variable attributes
+        for variable_name in sorted(nc_dataset.variables.keys()):
+            variable = nc_dataset.variables[variable_name]
+            if hasattr(variable, 'skos__concept_uri'):
+                set_dataset_variable_concept(dataset_variable_concept_dict, nc_path, variable_name, variable.skos__concept_uri)
                 
-            self.dataset_variable_concept_dict.update(dataset_variable_concept_dict) # Update cache
+        nc_dataset.close()
+        
+        # Create (<netCDF_path> <variable_name>) tuple for dataset with no concept
+        dataset_variable_concept_dict = dataset_variable_concept_dict or {(nc_path, None): None}
+            
+        self.dataset_variable_concept_dict.update(dataset_variable_concept_dict) # Update cache
         
         return dataset_variable_concept_dict
     
