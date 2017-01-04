@@ -34,6 +34,17 @@ class NCConceptHierarchy(ConceptHierarchy):
         '''
         Recursive function to construct concept hierarchies and return all concepts for a given netCDF file
         '''
+        def set_dataset_variable_concepts(dataset_variable_concept_dict, nc_path, variable_name, concept_uris):
+            '''Helper function to find and set key:value in dataset_variable_concept_dict'''
+            dataset_variable_concept_dict[(nc_path, variable_name)] = [] # empty list of concepts
+            for concept_uri in [concept_uri.strip() for concept_uri in concept_uris.split(',')]:
+            
+                if self.verbose:
+                    print '  Processing ' + os.path.basename(nc_path) + ':' + variable_name + ' with URI', concept_uri
+                    
+                concept = self.get_concept_from_uri(concept_uri)                    
+                dataset_variable_concept_dict[(nc_path, variable_name)].append(concept)
+            
         nc_path = os.path.abspath(nc_path)
         
         # Check cache first
@@ -48,17 +59,14 @@ class NCConceptHierarchy(ConceptHierarchy):
         else:   
             nc_dataset = netCDF4.Dataset(nc_path, 'r')
         
+            if hasattr(nc_dataset, 'skos__concept_uri'):
+                # Set variable name to '' for global attribute
+                set_dataset_variable_concepts(dataset_variable_concept_dict, nc_path, '', nc_dataset.skos__concept_uri)
+
             for variable_name in sorted(nc_dataset.variables.keys()):
                 variable = nc_dataset.variables[variable_name]
                 if hasattr(variable, 'skos__concept_uri'):
-                    dataset_variable_concept_dict[(nc_path, variable_name)] = [] # empty list of concepts
-                    for concept_uri in [concept_uri.strip() for concept_uri in variable.skos__concept_uri.split(',')]:
-                    
-                        if self.verbose:
-                            print '  Processing ' + os.path.basename(nc_path) + ':' + variable_name + ' with URI', concept_uri
-                            
-                        concept = self.get_concept_from_uri(concept_uri)                    
-                        dataset_variable_concept_dict[(nc_path, variable_name)].append(concept)
+                    set_dataset_variable_concepts(dataset_variable_concept_dict, nc_path, variable_name, variable.skos__concept_uri)
                     
             nc_dataset.close()
             
