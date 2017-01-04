@@ -263,7 +263,7 @@ class ConceptHierarchy(object):
         Function to load contents from disk cache
         '''
         if self.verbose:
-            print 'Loading data from %s'% self.cache_dir
+            print 'Loading cached concept hierarchy data from %s'% self.cache_dir
                
         cached_concept_hierarchy_path = os.path.join(self.cache_dir, 'concept_hierarchy.yaml')
         try:
@@ -297,7 +297,7 @@ class ConceptHierarchy(object):
         Function to dump current contents to disk cache
         ''' 
         if self.verbose:
-            print 'Caching data to %s'% self.cache_dir
+            print 'Caching concept hierarchy data to %s'% self.cache_dir
                
         if not os.path.isdir(self.cache_dir):
             os.mkdir(self.cache_dir)
