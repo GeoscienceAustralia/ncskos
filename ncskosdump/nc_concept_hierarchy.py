@@ -64,7 +64,7 @@ class NCConceptHierarchy(ConceptHierarchy):
             # Create (<netCDF_path> <variable_name>) tuple for dataset with no concept
             dataset_variable_concept_dict = dataset_variable_concept_dict or {(nc_path, None): None}
                 
-            self.dataset_variable_concept_dict.update(dataset_variable_concept_dict) # Update cache
+            self.dataset_variable_concept_dict.update_from_skos_query(dataset_variable_concept_dict) # Update cache
         
         return dataset_variable_concept_dict
     
@@ -123,7 +123,7 @@ class NCConceptHierarchy(ConceptHierarchy):
             cached_dataset_variable_concept_dict = {}
             
         for dataset_variable, concept_uri in cached_dataset_variable_concept_dict.iteritems():
-            self.dataset_variable_concept_dict[dataset_variable] = self.concept_registry[concept_uri]
+            self.dataset_variable_concept_dict[dataset_variable] = self.concept_registry.get(concept_uri)
             
             
     def dump(self):
@@ -133,7 +133,7 @@ class NCConceptHierarchy(ConceptHierarchy):
         # Call inherited dump function to dump self.concept_registry to disk cache
         ConceptHierarchy.dump(self)
         
-        cached_dataset_variable_concept_dict = {dataset_variable: concept.concept_uri
+        cached_dataset_variable_concept_dict = {dataset_variable: concept.uri if concept is not None else None
                                                 for dataset_variable, concept in self.dataset_variable_concept_dict.iteritems()}
         
         cached_dataset_variable_concept_dict_path = os.path.join(self.cache_dir, 'dataset_variable_concepts.yaml')
