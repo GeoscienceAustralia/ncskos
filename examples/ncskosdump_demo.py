@@ -26,6 +26,7 @@ def main():
             unresolved URIs. Default retries = 0
         --delay=<retry_delay_seconds> where <retry_delay_seconds> is the number of seconds to wait before 
             each retry. Default delay = 2s
+        --refresh to discard current disk cache
         
     Command line arguments without a leading '-' or '--' are assumed to be targets, which can be either 
         individual netCDF files or directories containing netCDF files.
@@ -54,6 +55,7 @@ def main():
             os.path.dirname(os.path.abspath(__file__))), 'data')]
         
     verbose=arg_value_dict.get('verbose')
+    refresh=arg_value_dict.get('refresh')
     
     # Get list of altlabels against which to match concepts
     altlabels = arg_value_dict.get('altlabels')
@@ -90,7 +92,8 @@ def main():
     nc_concept_hierarchy = NCConceptHierarchy(lang=arg_value_dict.get('lang'), 
                                               broader=True, # Always resolve broader to top concepts
                                               narrower=arg_value_dict.get('narrower'),
-                                              verbose=verbose
+                                              verbose=verbose,
+                                              refresh=refresh
                                               )   
      
     if verbose:

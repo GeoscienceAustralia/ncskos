@@ -5,6 +5,7 @@ Created on 20Dec.,2016
 '''
 import os
 import netCDF4
+import yaml
 
 from ncskosdump.concept_hierarchy import ConceptHierarchy
 
@@ -12,22 +13,23 @@ class NCConceptHierarchy(ConceptHierarchy):
     '''
     NCConceptHierarchy - Class to extend ConceptHierarchy to work with multiple netCDF files
     '''
-    def __init__(self, initial_concept_uri=None, lang=None, broader=True, narrower=False, verbose=False):
+    def __init__(self, initial_concept_uri=None, lang=None, broader=True, narrower=False, verbose=False, refresh=False):
         '''
         Constructor for class NCConceptHierarchy descended from class ConceptHierarchy
         '''
+        # Cache of concepts per variable per file
+        self.dataset_variable_concept_dict = {} 
+        
         # Call inherited constructor
         ConceptHierarchy.__init__(self,
                                   lang=lang, 
                                   broader=broader,
                                   narrower=narrower,
-                                  verbose=verbose
+                                  verbose=verbose,
+                                  refresh=refresh
                                   )   
          
-        # Cache of concepts per variable per file
-        self.dataset_variable_concept_dict = {} 
-        
-        
+           
     def get_concepts_from_netcdf(self, nc_path):
         '''
         Recursive function to construct concept hierarchies and return all concepts for a given netCDF file
@@ -104,3 +106,39 @@ class NCConceptHierarchy(ConceptHierarchy):
             print '\t' * level + '  ' + ':'.join([str(item) for item in dataset_variable])
         for narrower_concept in concept.narrower:
             self.print_concept_tree(narrower_concept, level+1)
+            
+    def load(self):
+        '''
+        Overridden function to load contents from disk cache
+        '''
+        # Call inherited load function to load self.concept_registry from disk cache
+        ConceptHierarchy.load(self)
+        
+        try:
+            cached_dataset_variable_concept_dict_path = os.path.join(self.cache_dir, 'dataset_variable_concepts.yaml')
+            cached_dataset_variable_concept_dict_file = open(cached_dataset_variable_concept_dict_path, 'r')
+            cached_dataset_variable_concept_dict = yaml.load(cached_dataset_variable_concept_dict_file)
+            cached_dataset_variable_concept_dict_file.close()
+        except:
+            cached_dataset_variable_concept_dict = {}
+            
+        for dataset_variable, concept_uri in cached_dataset_variable_concept_dict.iteritems():
+            self.dataset_variable_concept_dict[dataset_variable] = self.concept_registry.get(concept_uri)
+            
+            
+    def dump(self):
+        '''
+        Overridden function to dump contents to disk cache
+        '''
+        # Call inherited dump function to dump self.concept_registry to disk cache
+        ConceptHierarchy.dump(self)
+        
+        cached_dataset_variable_concept_dict = {dataset_variable: concept.uri if concept is not None else None
+                                                for dataset_variable, concept in self.dataset_variable_concept_dict.iteritems()
+                                                if concept is None or not concept.unresolved # Don't cache unresolved concepts
+                                                }
+        
+        cached_dataset_variable_concept_dict_path = os.path.join(self.cache_dir, 'dataset_variable_concepts.yaml')
+        cached_dataset_variable_concept_dict_file = open(cached_dataset_variable_concept_dict_path, 'w')
+        yaml.dump(cached_dataset_variable_concept_dict, cached_dataset_variable_concept_dict_file)
+        cached_dataset_variable_concept_dict_file.close()
