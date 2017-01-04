@@ -64,7 +64,7 @@ class NCConceptHierarchy(ConceptHierarchy):
             # Create (<netCDF_path> <variable_name>) tuple for dataset with no concept
             dataset_variable_concept_dict = dataset_variable_concept_dict or {(nc_path, None): None}
                 
-            self.dataset_variable_concept_dict.update_from_skos_query(dataset_variable_concept_dict) # Update cache
+            self.dataset_variable_concept_dict.update(dataset_variable_concept_dict) # Update cache
         
         return dataset_variable_concept_dict
     
