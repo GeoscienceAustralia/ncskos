@@ -4,6 +4,8 @@ Created on 16Dec.,2016
 @author: Alex Ip
 """
 import os
+import tempfile
+import yaml
 from ncskosdump.ld_functions import ConceptFetcher
 
 class Concept(object):
@@ -29,6 +31,7 @@ class Concept(object):
 
         self.broader = []
         self.narrower = []
+        
         
     def update(self, concept_results, lang='en'):
         '''
@@ -159,7 +162,13 @@ class ConceptHierarchy(object):
                                         for concept_altlabel in concept.altLabels]
                 ]
     
-    def __init__(self, initial_concept_uri=None, lang=None, broader=True, narrower=False, verbose=False):
+    def __init__(self, 
+                 initial_concept_uri=None, 
+                 lang=None, 
+                 broader=True, 
+                 narrower=False, 
+                 verbose=False,
+                 refresh=False):
         """
         Constructor for class ConceptHierarchy
         Note: Need at least one of "narrower" or "broader" specified as True in order to build concept trees
@@ -170,7 +179,25 @@ class ConceptHierarchy(object):
         :param narrower: Boolean flag dictating whether concept trees should be recursively populated down to bottom concepts. 
             Defaults to False
         """
+        def get_cached_skos_option_dict():
+            '''
+            Helper function to retrieve cached skos_option_dict
+            '''
+            cached_skos_option_dict_path = os.path.join(self.cache_dir, 'skos_options.yaml')
+            try:
+                cached_skos_option_dict_file = open(cached_skos_option_dict_path, 'r')
+                cached_skos_option_dict = yaml.load(cached_skos_option_dict_file)
+                cached_skos_option_dict_file.close()
+            except:
+                cached_skos_option_dict = {}
+                
+            return cached_skos_option_dict
+        
+        # Start of constructor
         assert narrower or broader, 'Need at least one of "broader" or "narrower" set to True in order to build concept trees'
+        
+        self.cache_dir = os.path.join(tempfile.gettempdir(), 'concept_hierarchy')
+        self.refresh = refresh or not os.path.isdir(self.cache_dir)
         
         self.lang = lang or 'en'
         self.narrower = narrower
@@ -181,13 +208,28 @@ class ConceptHierarchy(object):
                             'narrower': narrower, 
                             'broader': broader,
                             'lang': lang
-                            }           
+                            }   
+                
+        # Force refresh if SKOS options have changed
+        self.refresh = self.refresh or (skos_option_dict != get_cached_skos_option_dict()) 
+
         self.concept_fetcher = ConceptFetcher(skos_option_dict)
         
         self.concept_registry = {}
-    
+        
+        if self.refresh:
+            self.load()    
+        
         if initial_concept_uri:
-            self.get_concept_from_uri(initial_concept_uri)  # Build tree around initial URI
+            self.get_concept_from_uri(initial_concept_uri)  # Build tree around initial URI if specified
+            
+    def __del__(self):
+        '''
+        Destructor for class ConceptHierarchy
+        Dumps cache to disk
+        '''
+        if self.concept_registry:
+            self.dump()
 
     def print_concept_tree(self, concept, level=0):
         '''
@@ -212,6 +254,57 @@ class ConceptHierarchy(object):
         '''
         for unresolved_concept in self.get_unresolved_concepts():
             self.get_concept_from_uri(unresolved_concept.uri, refresh_cache=True)
+            
+    def load(self):
+        '''
+        Function to load contents from disk cache
+        '''
+        cached_concept_hierarchy_path = os.path.join(self.cache_dir, 'concept_hierarchy.yaml')
+        try:
+            cached_concept_hierarchy_file = open(cached_concept_hierarchy_path, 'r')
+            cached_concept_hierarchy_dict = yaml.load(cached_concept_hierarchy_file)
+            cached_concept_hierarchy_file.close()
+        except:
+            cached_concept_hierarchy_dict = {}
+            
+        # First pass creates concept objects
+        for concept_uri in cached_concept_hierarchy_dict.keys():
+            cached_concept_dict = cached_concept_hierarchy_dict[concept_uri]
+            self.concept_registry[concept_uri] = Concept(concept_uri=concept_uri,
+                                                                prefLabel=cached_concept_dict['prefLabel'],
+                                                                altLabels=cached_concept_dict['altLabels'], # List of altLabel strings
+                                                                unresolved=cached_concept_dict['unresolved']
+                                                                )
+    
+        # Second pass populates narrower/broader lists in concept objects
+        for concept_uri, concept in self.concept_registry.iteritems():
+            cached_concept_dict = cached_concept_hierarchy_dict[concept_uri]
+            concept.narrower = [self.concept_registry[narrower_uri] for narrower_uri in cached_concept_dict['narrower']]
+            concept.broader = [self.concept_registry[broader_uri] for broader_uri in cached_concept_dict['broader']]
+            
+    def dump(self):
+        '''
+        Function to dump current contents to disk cache
+        '''       
+        cached_concept_dict = {}
+        for concept_uri, concept in self.concept_registry.iteritems():
+            cached_concept_dict[concept_uri] = {'concept_uri': concept.concept_uri,
+                                                'prefLabel': concept.prefLabel,
+                                                'altLabels': concept.altLabels,
+                                                'unresolved': concept.unresolved,
+                                                'narrower': [narrower_concept.concept_uri for narrower_concept in concept.narrower],
+                                                'broader': [broader_concept.concept_uri for broader_concept in concept.broader],
+                                                }
+
+        cached_skos_option_dict_path = os.path.join(self.cache_dir, 'skos_options.yaml')
+        cached_skos_option_dict_file = open(cached_skos_option_dict_path, 'w')
+        yaml.dump(self.skos_option_dict, cached_skos_option_dict_file)
+        cached_skos_option_dict_file.close()
+
+        cached_concept_hierarchy_path = os.path.join(self.cache_dir, 'concept_hierarchy.yaml')
+        cached_concept_hierarchy_file = open(cached_concept_hierarchy_path, 'w')
+        yaml.dump(cached_concept_dict, cached_concept_hierarchy_file)
+        cached_concept_hierarchy_file.close()
             
      
 def main():
