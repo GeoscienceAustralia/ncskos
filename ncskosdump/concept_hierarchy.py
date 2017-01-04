@@ -177,7 +177,8 @@ class ConceptHierarchy(object):
             Defaults to True
         :param narrower: Boolean flag dictating whether concept trees should be recursively populated down to bottom concepts. 
             Defaults to False
-        :param refresh: Boolean flag dictating whether data in disk cache should be ignored
+        :param verbose: Boolean flag dictating whether verbose output is required (default=False)
+        :param refresh: Boolean flag dictating whether data in disk cache should be ignored (default=False)
         """
         def get_cached_skos_option_dict():
             '''

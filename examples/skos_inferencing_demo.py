@@ -115,8 +115,6 @@ def main():
             sleep(retry_delay)
 
         nc_concept_hierarchy.retry_unresolved_uris()
-      
-            
   
     
     print '=' * 80 + '\nDatasets grouped by concept\n'
@@ -154,6 +152,8 @@ def main():
         else:
             print '\nNo concepts found with altLabel "%s"' % altlabel
 
-            
+    if verbose:
+        print '\n' + '=' * 80
+                      
 if __name__ == '__main__':
     main()
