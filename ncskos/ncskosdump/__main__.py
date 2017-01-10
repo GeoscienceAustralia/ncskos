@@ -4,7 +4,7 @@ Created on 30 Sep 2016
 @author: Alex Ip
 """
 import sys
-from ncskosdump import NcSKOSDump
+from ncskos.ncskosdump import NcSKOSDump
 
 
 def main():

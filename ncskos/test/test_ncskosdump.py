@@ -1,5 +1,5 @@
 """
-Unit tests for ncskosdump against a modified NetCDF file
+Unit tests for ncskos against a modified NetCDF file
 
 Created on 5Oct.,2016
 
@@ -7,28 +7,30 @@ Created on 5Oct.,2016
 """
 import unittest
 import os
-from ncskosdump import NcSKOSDump
+from ncskos import NcSKOSDump
 
 SHOW_DEBUG_OUTPUT = False
 
-# Test file in the same directory as this script
-TEST_NC_PATH = 'sst.ltm.2000_skos.nc'
 SKOS_OPTION_LIST = ['--skos', 'lang=pl',
                     'altLabels=True', 'narrower=True', 'broader=True']
 SKOS_OPTION_DICT = {'lang': 'pl', 'altLabels': True,
                     'narrower': True, 'broader': True}
 
+# Directory containing this script
 TEST_DIR = os.path.abspath(os.path.dirname(__file__))
+# Test file in the data directory adjacent to the module directory
+DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(TEST_DIR)), 'data')
+TEST_NC_PATH = os.path.join(DATA_DIR, 'sst.ltm.1999-2000_skos_sea_surface_temperature.nc')
 
-TEST_ARGS = {'CDL': ['-hs', os.path.join(TEST_DIR, TEST_NC_PATH)] + SKOS_OPTION_LIST,
-             'XML': ['-x', os.path.join(TEST_DIR, TEST_NC_PATH)] + SKOS_OPTION_LIST}
+TEST_ARGS = {'CDL': ['-hs', TEST_NC_PATH] + SKOS_OPTION_LIST,
+             'XML': ['-x', TEST_NC_PATH] + SKOS_OPTION_LIST}
 
 # Test different permutations of arguments
 TEST_ARG_PERMUTATIONS = [
-    SKOS_OPTION_LIST + ['-hs', os.path.join(TEST_DIR, TEST_NC_PATH)],
-    SKOS_OPTION_LIST + [os.path.join(TEST_DIR, TEST_NC_PATH), '-hs'],
-    ['-hs'] + SKOS_OPTION_LIST + [os.path.join(TEST_DIR, TEST_NC_PATH)],
-    [os.path.join(TEST_DIR, TEST_NC_PATH)] + SKOS_OPTION_LIST + ['-hs'],
+    SKOS_OPTION_LIST + ['-hs', TEST_NC_PATH],
+    SKOS_OPTION_LIST + [TEST_NC_PATH, '-hs'],
+    ['-hs'] + SKOS_OPTION_LIST + [TEST_NC_PATH],
+    [TEST_NC_PATH] + SKOS_OPTION_LIST + ['-hs'],
 ]
 
 nclddump_object = None  # Shared instance so we only invoke the constructor once
@@ -94,7 +96,7 @@ class TestNCLDDumpSystem(unittest.TestCase):
             if test_key == 'CDL':
                 assert 'sst:skos__prefLabel_pl = "temperatura powierzchni morza" ;' in nclddump_result, 'SKOS prefLabel query failed'
                 assert 'sst:skos__altLabels = "SST" ;' in nclddump_result, 'SKOS altLabels query failed'
-                assert 'sst:skos__broader = "" ;' in nclddump_result, 'SKOS broader query failed'
+                assert 'sst:skos__broader = "http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/surface_temperature" ;' in nclddump_result, 'SKOS broader query failed'
                 assert 'sst:skos__narrower = "http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_skin_temperature, \
 http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_subskin_temperature, \
 http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/square_of_sea_surface_temperature" ;' in nclddump_result, 'SKOS narrower query failed'
