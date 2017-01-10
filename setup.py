@@ -3,16 +3,14 @@
 from distutils.core import setup
 import os
 
-version = '0.0.0'
+version = '0.0.1'
 
 setup(name='ncskosdump',
       version=version,
       packages=[
-          'ncskosdump',
-          'ncskosdump.test'
+          'ncskosdump'
       ],
       package_data={
-          'ncskosdump.data': ['sst.ltm.1971-2000_skos.nc']
       },
       scripts=(['bin/ncskosdump'] if (os.name == 'posix')
                else (['bin\\ncskosdump.bat'] if (os.name == 'nt')
