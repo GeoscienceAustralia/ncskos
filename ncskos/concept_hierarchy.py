@@ -6,7 +6,7 @@ Created on 16Dec.,2016
 import os
 import tempfile
 import yaml
-from ncskosdump.ld_functions import ConceptFetcher
+from ncskos.ld_functions import ConceptFetcher
 
 class Concept(object):
     '''
