@@ -8,11 +8,9 @@ version = '0.0.1'
 setup(name='ncskos',
       version=version,
       packages=[
-          'ncskos',
-          'ncskos.test'
+          'ncskos'
       ],
       package_data={
-          'ncskos.data': ['sst.ltm.1971-2000_skos.nc']
       },
       scripts=(['bin/ncskosdump'] if (os.name == 'posix')
                else (['bin\\ncskosdump.bat'] if (os.name == 'nt')

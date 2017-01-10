@@ -7,7 +7,7 @@ Created on 5Oct.,2016
 """
 import unittest
 import os
-from ncskos.ncskosdump import NcSKOSDump
+from ncskos import NcSKOSDump
 
 SHOW_DEBUG_OUTPUT = False
 
