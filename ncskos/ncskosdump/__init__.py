@@ -150,6 +150,8 @@ class NcSKOSDump(object):
                             combined_skos_lookup_dict[key] = existing_value + ', ' + value
                         else:
                             combined_skos_lookup_dict[key] = value
+                            
+            return combined_skos_lookup_dict
 
             
         def process_xml(input_spool, output_spool):
@@ -227,6 +229,7 @@ class NcSKOSDump(object):
                 output
                 '''
                 # Write each key:value pair as a separate line
+                multi_uri_results = get_multi_uri_results(uris)
                 for key, value in get_multi_uri_results(uris).items():
                     modified_line = (
                         skos_line.replace(variable_name +

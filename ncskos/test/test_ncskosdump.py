@@ -96,14 +96,14 @@ class TestNCLDDumpSystem(unittest.TestCase):
             if test_key == 'CDL':
                 assert 'sst:skos__prefLabel_pl = "temperatura powierzchni morza" ;' in nclddump_result, 'SKOS prefLabel query failed'
                 assert 'sst:skos__altLabels = "SST" ;' in nclddump_result, 'SKOS altLabels query failed'
-                assert 'sst:skos__broader = "" ;' in nclddump_result, 'SKOS broader query failed'
+                assert 'sst:skos__broader = "http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/surface_temperature" ;' in nclddump_result, 'SKOS broader query failed'
                 assert 'sst:skos__narrower = "http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_skin_temperature, \
 http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_subskin_temperature, \
 http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/square_of_sea_surface_temperature" ;' in nclddump_result, 'SKOS narrower query failed'
             elif test_key == 'XML':
                 assert '<attribute name="skos__prefLabel_pl" value="temperatura powierzchni morza"/>' in nclddump_result, 'SKOS prefLabel query failed'
                 assert '<attribute name="skos__altLabels" value="SST"/>' in nclddump_result, 'SKOS altLabels query failed'
-                assert '<attribute name="skos__broader" value=""/>' in nclddump_result, 'SKOS broader query failed'
+                assert '<attribute name="skos__broader" value="http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/surface_temperature"/>' in nclddump_result, 'SKOS broader query failed'
                 assert '<attribute name="skos__narrower" value="http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_skin_temperature, \
 http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_subskin_temperature, \
 http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/square_of_sea_surface_temperature"/>' in nclddump_result, 'SKOS narrower query failed'
