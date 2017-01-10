@@ -21,7 +21,7 @@ import subprocess
 import tempfile
 from lxml import etree
 from distutils.util import strtobool
-from ld_functions import ConceptFetcher
+from ncskos.ld_functions import ConceptFetcher
 
 # Set handler for root logger to standard output if no handler exists
 if not logging.root.handlers:

@@ -9,7 +9,7 @@ import re
 from glob import glob
 from time import sleep
 
-from ncskosdump.nc_concept_hierarchy import NCConceptHierarchy
+from ncskos import NCConceptHierarchy
 
 def main():
     '''

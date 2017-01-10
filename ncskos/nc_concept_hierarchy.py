@@ -7,7 +7,7 @@ import os
 import netCDF4
 import yaml
 
-from ncskosdump.concept_hierarchy import ConceptHierarchy
+from ncskos.concept_hierarchy import ConceptHierarchy
 
 class NCConceptHierarchy(ConceptHierarchy):
     '''
