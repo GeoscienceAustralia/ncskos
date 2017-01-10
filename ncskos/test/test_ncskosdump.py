@@ -93,7 +93,6 @@ class TestNCLDDumpSystem(unittest.TestCase):
             assert nclddump_object.error is None, 'process_ncdump failed for %s: %s' % (
                 test_key, nclddump_object.error)
 
-            print nclddump_result
             if test_key == 'CDL':
                 assert 'sst:skos__prefLabel_pl = "temperatura powierzchni morza" ;' in nclddump_result, 'SKOS prefLabel query failed'
                 assert 'sst:skos__altLabels = "SST" ;' in nclddump_result, 'SKOS altLabels query failed'
@@ -102,7 +101,7 @@ class TestNCLDDumpSystem(unittest.TestCase):
 http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/sea_surface_subskin_temperature, \
 http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/square_of_sea_surface_temperature" ;' in nclddump_result, 'SKOS narrower query failed'
             elif test_key == 'XML':
-                #TODO: These text-based tests don't work reliably with multiple URIS in a file -need to fix
+                #TODO: These text-based tests don't work reliably with multiple URIS in a file - need to fix
                 assert '<attribute name="skos__prefLabel_pl" value="temperatura powierzchni morza"/>' in nclddump_result, 'SKOS prefLabel query failed'
                 assert '<attribute name="skos__altLabels" value="SST"/>' in nclddump_result, 'SKOS altLabels query failed'
                 assert '<attribute name="skos__broader" value="http://pid.geoscience.gov.au/def/voc/netCDF-LD-eg-ToS/surface_temperature"/>' in nclddump_result, 'SKOS broader query failed'
