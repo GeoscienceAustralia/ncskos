@@ -197,7 +197,7 @@ class ConceptHierarchy(object):
         # Start of constructor
         assert narrower or broader, 'Need at least one of "broader" or "narrower" set to True in order to build concept trees'
         
-        self.cache_dir = os.path.join(tempfile.gettempdir(), 'concept_hierarchy')
+        self.fcache_dir = os.path.join(tempfile.gettempdir(), 'concept_hierarchy')
         
         self.lang = lang or 'en'
         self.narrower = narrower
