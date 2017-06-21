@@ -13,7 +13,13 @@ class NCConceptHierarchy(ConceptHierarchy):
     '''
     NCConceptHierarchy - Class to extend ConceptHierarchy to work with multiple netCDF files
     '''
-    def __init__(self, initial_concept_uri=None, lang=None, broader=True, narrower=False, verbose=False, refresh=False):
+    def __init__(self, 
+                 initial_concept_uri=None, 
+                 lang=None, 
+                 broader=True, 
+                 narrower=False, 
+                 verbose=False, 
+                 refresh=False):
         '''
         Constructor for class NCConceptHierarchy descended from class ConceptHierarchy
         '''

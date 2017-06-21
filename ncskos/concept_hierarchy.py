@@ -288,9 +288,10 @@ class ConceptHierarchy(object):
         # Second pass populates narrower/broader lists in concept objects
         for concept_uri, concept in self.concept_registry.iteritems():
             if concept is not None:
-                cached_concept_dict = cached_concept_hierarchy_dict[concept_uri]
-                concept.narrower = [self.concept_registry[narrower_uri] for narrower_uri in cached_concept_dict['narrower']]
-                concept.broader = [self.concept_registry[broader_uri] for broader_uri in cached_concept_dict['broader']]
+                cached_concept_dict = cached_concept_hierarchy_dict.get(concept_uri)
+                if cached_concept_dict:
+                    concept.narrower = [self.concept_registry[narrower_uri] for narrower_uri in cached_concept_dict['narrower']]
+                    concept.broader = [self.concept_registry[broader_uri] for broader_uri in cached_concept_dict['broader']]
             
     def dump(self):
         '''
