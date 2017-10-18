@@ -1,20 +1,29 @@
 # ncskos
 *ncskos* is a collection of tools for manipulating netCDF files with Linked Data functionality.
 
+
 ## About this code repository
 This code repository is developed and maintained by [Geoscience Australia](http://www.ga.gov.au) (GA) and it is catalogued in GA's main data catalogue, eCat, at: <http://pid.geoscience.gov.au/dataset/103620> (note that this link will only work for parties outside of GA from February, 2017). 
 
-### Authors and Contact
+
+## License
+It is licensed using Creative Commons 4.0 International (see [LICENSE file](LICENSE)).
+
+
+## Contacts
+Author:  
 **Nicholas Car**  
 Data Architect  
 Geoscience Australia  
 <nicholas.car@ga.gov.au>   
 <http://orcid.org/0000-0002-8742-7730>  
-  
+
+Author:  
 **Alex Ip**  
 Geoscience Australia  
 <alex.ip@ga.gov.au>  
 <http://orcid.org/0000-0001-8937-8904>   
+
 
 ## ncskosdump
 *ncskosdump* is a simple command line tool that wraps and extends the well-known netCDF tool [ncdump](https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/netcdf/ncdump.html), providing functionality to perform Linked Data tasks such as the dereferencing of URIs to collect vocabulary term labels. 
