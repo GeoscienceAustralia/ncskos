@@ -2,12 +2,8 @@
 *ncskos* is a collection of tools for manipulating netCDF files with Linked Data functionality.
 
 
-## About this code repository
-This code repository is developed and maintained by [Geoscience Australia](http://www.ga.gov.au) (GA) and it is catalogued in GA's main data catalogue, eCat, at: <http://pid.geoscience.gov.au/dataset/103620> (note that this link will only work for parties outside of GA from February, 2017). 
-
-
 ## License
-It is licensed using Creative Commons 4.0 International (see [LICENSE file](LICENSE)).
+This repository is licensed under Creative Commons 4.0 International. See the [LICENSE deed](LICENSE) in this repository for details.
 
 
 ## Contacts
@@ -25,7 +21,8 @@ Geoscience Australia
 <http://orcid.org/0000-0001-8937-8904>   
 
 
-## ncskosdump
+## How to use
+### ncskosdump
 *ncskosdump* is a simple command line tool that wraps and extends the well-known netCDF tool [ncdump](https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/netcdf/ncdump.html), providing functionality to perform Linked Data tasks such as the dereferencing of URIs to collect vocabulary term labels. 
 
 Note: This utility requires that the netCDF command line utilities be installed. These utilities are available from: http://www.unidata.ucar.edu/software/netcdf/docs/getting_and_building_netcdf.html
@@ -82,5 +79,17 @@ Note that full unit tests can be run by entering the following:
 
 	python -m ncskosdump.test
 
-## Scenarios of use
+### Scenarios of use
 See the [inference scenario](examples/inferencing.md) for a brief explanation of how to use this tool to group files linked to a hierarchical vocabulary.
+
+
+## Catalog Location & Identification
+This repo is catalogued in Geoscience Australia’s enterprise catalogue eCat. Its identifier, which links directly to it is <http://pid.geoscience.gov.au/dataset/ga/103620>.
+
+It also has a DOI: [10.4225/25/59e42d381d04b](http://dx.doi.org/10.4225/25/59e42d381d04b).
+
+
+## Citing this software
+If you wish to cite this repo as you would a dataset, please do so like this:
+
+Car, N.J. & Ip, A. (2017) ncskos code repository. Git software repository containing Python code. [DOI:10.4225/25/59e42d381d04b](http://dx.doi.org/10.4225/25/59e42d381d04b)
