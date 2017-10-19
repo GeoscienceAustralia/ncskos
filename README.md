@@ -9,7 +9,7 @@ This repository is licensed under Creative Commons 4.0 International. See the [L
 ## Contacts
 Author:  
 **Nicholas Car**  
-Data Architect  
+*Data Architect*  
 Geoscience Australia  
 <nicholas.car@ga.gov.au>   
 <http://orcid.org/0000-0002-8742-7730>  
