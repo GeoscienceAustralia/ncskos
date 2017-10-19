@@ -84,7 +84,7 @@ See the [inference scenario](examples/inferencing.md) for a brief explanation of
 
 
 ## Catalog Location & Identification
-This repo is catalogued in Geoscience Australia’s enterprise catalogue eCat. Its identifier, which links directly to it is <http://pid.geoscience.gov.au/dataset/ga/103620>.
+This repo is catalogued in Geoscience Australia’s enterprise catalogue eCat. Its persistent URI identifier, which links directly to it, is <http://pid.geoscience.gov.au/dataset/ga/103620>.
 
 It also has a DOI: [10.4225/25/59e42d381d04b](http://dx.doi.org/10.4225/25/59e42d381d04b).
 
